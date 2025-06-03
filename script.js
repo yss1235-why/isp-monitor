@@ -41,21 +41,55 @@ main {
     background: #fff3cd;
     border: 2px solid #ffeaa7;
     border-radius: 12px;
-    padding: 2rem;
     margin-bottom: 2rem;
     box-shadow: 0 4px 12px rgba(255, 193, 7, 0.2);
+    overflow: hidden;
 }
 
-.disclaimer h2 {
+.disclaimer-header {
+    padding: 1.5rem 2rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+    transition: background-color 0.3s ease;
+}
+
+.disclaimer-header:hover {
+    background: rgba(255, 234, 167, 0.3);
+}
+
+.disclaimer-header h2 {
     color: #856404;
-    margin-bottom: 1rem;
+    margin: 0;
     display: flex;
     align-items: center;
     gap: 0.5rem;
 }
 
+.disclaimer-toggle {
+    color: #856404;
+    font-size: 1.2rem;
+    transition: transform 0.3s ease;
+    min-width: 20px;
+}
+
+.disclaimer-toggle.expanded {
+    transform: rotate(180deg);
+}
+
 .disclaimer-content {
     color: #856404;
+    padding: 0 2rem;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, padding 0.3s ease;
+}
+
+.disclaimer-content.expanded {
+    max-height: 1000px;
+    padding: 0 2rem 2rem 2rem;
 }
 
 .disclaimer-content ul {
@@ -229,12 +263,16 @@ footer a:hover {
         grid-template-columns: 1fr;
     }
     
-    .disclaimer {
-        padding: 1rem;
+    .disclaimer-header {
+        padding: 1rem 1.5rem;
     }
     
-    .disclaimer h2 {
+    .disclaimer-header h2 {
         font-size: 1.2rem;
+    }
+    
+    .disclaimer-content.expanded {
+        padding: 0 1.5rem 1.5rem 1.5rem;
     }
     
     .disclaimer-content {
