@@ -1,293 +1,176 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    line-height: 1.6;
-    color: #333;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    min-height: 100vh;
-}
-
-header {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    color: white;
-    text-align: center;
-    padding: 2rem 1rem;
-    margin-bottom: 2rem;
-}
-
-header h1 {
-    font-size: 2.5rem;
-    margin-bottom: 0.5rem;
-}
-
-header p {
-    opacity: 0.9;
-    font-size: 1.1rem;
-}
-
-main {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 1rem;
-}
-
-.disclaimer {
-    background: #fff3cd;
-    border: 2px solid #ffeaa7;
-    border-radius: 12px;
-    margin-bottom: 2rem;
-    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.2);
-    overflow: hidden;
-}
-
-.disclaimer-header {
-    padding: 1.5rem 2rem;
-    cursor: pointer;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    user-select: none;
-    transition: background-color 0.3s ease;
-}
-
-.disclaimer-header:hover {
-    background: rgba(255, 234, 167, 0.3);
-}
-
-.disclaimer-header h2 {
-    color: #856404;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.disclaimer-toggle {
-    color: #856404;
-    font-size: 1.2rem;
-    transition: transform 0.3s ease;
-    min-width: 20px;
-}
-
-.disclaimer-toggle.expanded {
-    transform: rotate(180deg);
-}
-
-.disclaimer-content {
-    color: #856404;
-    padding: 0 2rem;
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.3s ease, padding 0.3s ease;
-}
-
-.disclaimer-content.expanded {
-    max-height: 1000px;
-    padding: 0 2rem 2rem 2rem;
-}
-
-.disclaimer-content ul {
-    margin: 1rem 0;
-    padding-left: 1.5rem;
-}
-
-.disclaimer-content li {
-    margin-bottom: 0.5rem;
-}
-
-.disclaimer-content strong {
-    color: #533f03;
-}
-
-.disclaimer-content p {
-    margin-bottom: 1rem;
-}
-
-.summary {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1rem;
-    margin-bottom: 2rem;
-}
-
-.stat-card {
-    background: white;
-    border-radius: 12px;
-    padding: 1.5rem;
-    text-align: center;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease;
-}
-
-.stat-card:hover {
-    transform: translateY(-5px);
-}
-
-.stat-card h3 {
-    color: #666;
-    font-size: 0.9rem;
-    margin-bottom: 0.5rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.stat-value {
-    font-size: 2rem;
-    font-weight: bold;
-    color: #333;
-}
-
-.rankings {
-    background: white;
-    border-radius: 12px;
-    padding: 2rem;
-    margin-bottom: 2rem;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-}
-
-.rankings h2 {
-    margin-bottom: 1.5rem;
-    color: #333;
-}
-
-.table-container {
-    overflow-x: auto;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.9rem;
-}
-
-th, td {
-    text-align: left;
-    padding: 1rem 0.5rem;
-    border-bottom: 1px solid #eee;
-}
-
-th {
-    background: #f8f9fa;
-    font-weight: 600;
-    color: #555;
-    position: sticky;
-    top: 0;
-}
-
-tbody tr:hover {
-    background: #f8f9fa;
-}
-
-.status {
-    padding: 0.3rem 0.8rem;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: bold;
-    text-transform: uppercase;
-}
-
-.status.up {
-    background: #d4edda;
-    color: #155724;
-}
-
-.status.down {
-    background: #f8d7da;
-    color: #721c24;
-}
-
-.quality {
-    padding: 0.3rem 0.8rem;
-    border-radius: 20px;
-    font-weight: bold;
-    color: white;
-}
-
-.quality.excellent {
-    background: #28a745;
-}
-
-.quality.good {
-    background: #17a2b8;
-}
-
-.quality.fair {
-    background: #ffc107;
-    color: #333;
-}
-
-.quality.poor {
-    background: #dc3545;
-}
-
-.charts {
-    background: white;
-    border-radius: 12px;
-    padding: 2rem;
-    margin-bottom: 2rem;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-}
-
-.charts h2 {
-    margin-bottom: 1.5rem;
-    color: #333;
-}
-
-footer {
-    text-align: center;
-    padding: 2rem;
-    color: rgba(255, 255, 255, 0.8);
-}
-
-footer a {
-    color: white;
-    text-decoration: none;
-}
-
-footer a:hover {
-    text-decoration: underline;
-}
-
-@media (max-width: 768px) {
-    header h1 {
-        font-size: 2rem;
-    }
+// Disclaimer toggle functionality
+function toggleDisclaimer() {
+    const content = document.getElementById('disclaimer-content');
+    const toggle = document.getElementById('disclaimer-toggle');
     
-    .summary {
-        grid-template-columns: 1fr;
-    }
-    
-    .disclaimer-header {
-        padding: 1rem 1.5rem;
-    }
-    
-    .disclaimer-header h2 {
-        font-size: 1.2rem;
-    }
-    
-    .disclaimer-content.expanded {
-        padding: 0 1.5rem 1.5rem 1.5rem;
-    }
-    
-    .disclaimer-content {
-        font-size: 0.9rem;
-    }
-    
-    .rankings {
-        padding: 1rem;
-    }
-    
-    table {
-        font-size: 0.8rem;
-    }
-    
-    th, td {
-        padding: 0.5rem 0.3rem;
+    if (content.classList.contains('expanded')) {
+        content.classList.remove('expanded');
+        toggle.classList.remove('expanded');
+        toggle.textContent = '▼';
+    } else {
+        content.classList.add('expanded');
+        toggle.classList.add('expanded');
+        toggle.textContent = '▲';
     }
 }
+
+class ISPMonitor {
+    constructor() {
+        this.data = [];
+        this.latestData = new Map();
+        this.init();
+    }
+
+    async init() {
+        await this.loadData();
+        this.updateDashboard();
+        
+        // Auto-refresh every 5 minutes
+        setInterval(() => {
+            this.loadData().then(() => this.updateDashboard());
+        }, 5 * 60 * 1000);
+    }
+
+    async loadData() {
+        try {
+            const response = await fetch('./data/logs.csv');
+            const csvText = await response.text();
+            this.data = this.parseCSV(csvText);
+            this.processLatestData();
+        } catch (error) {
+            console.error('Error loading data:', error);
+        }
+    }
+
+    parseCSV(csvText) {
+        const lines = csvText.trim().split('\n');
+        const headers = lines[0].split(',');
+        
+        return lines.slice(1).map(line => {
+            const values = line.split(',');
+            const row = {};
+            headers.forEach((header, index) => {
+                row[header.trim()] = values[index]?.trim() || '';
+            });
+            return row;
+        });
+    }
+
+    processLatestData() {
+        // Get latest reading for each ISP
+        this.latestData.clear();
+        
+        this.data.forEach(row => {
+            const isp = row.isp_name;
+            const timestamp = new Date(row.timestamp);
+            
+            if (!this.latestData.has(isp) || 
+                new Date(this.latestData.get(isp).timestamp) < timestamp) {
+                this.latestData.set(isp, row);
+            }
+        });
+    }
+
+    calculateUptimeToday(ispName) {
+        const today = new Date().toISOString().split('T')[0];
+        const todayData = this.data.filter(row => 
+            row.isp_name === ispName && 
+            row.timestamp.startsWith(today)
+        );
+        
+        if (todayData.length === 0) return '100%';
+        
+        const upCount = todayData.filter(row => row.status === 'UP').length;
+        const uptime = (upCount / todayData.length * 100).toFixed(1);
+        return `${uptime}%`;
+    }
+
+    updateDashboard() {
+        this.updateSummary();
+        this.updateTable();
+    }
+
+    updateSummary() {
+        const totalISPs = this.latestData.size;
+        const ispsUp = Array.from(this.latestData.values())
+            .filter(row => row.status === 'UP').length;
+        
+        const avgLatency = this.calculateAverageLatency();
+        const lastUpdate = this.getLastUpdateTime();
+
+        document.getElementById('total-isps').textContent = totalISPs;
+        document.getElementById('isps-up').textContent = `${ispsUp}/${totalISPs}`;
+        document.getElementById('avg-latency').textContent = `${avgLatency}ms`;
+        document.getElementById('last-update').textContent = lastUpdate;
+    }
+
+    calculateAverageLatency() {
+        const upISPs = Array.from(this.latestData.values())
+            .filter(row => row.status === 'UP');
+        
+        if (upISPs.length === 0) return '0';
+        
+        const totalLatency = upISPs.reduce((sum, row) => 
+            sum + parseFloat(row.avg_latency || 0), 0);
+        
+        return (totalLatency / upISPs.length).toFixed(1);
+    }
+
+    getLastUpdateTime() {
+        if (this.data.length === 0) return 'Never';
+        
+        const latestTimestamp = Math.max(...this.data.map(row => 
+            new Date(row.timestamp).getTime()));
+        
+        const timeDiff = Date.now() - latestTimestamp;
+        const minutes = Math.floor(timeDiff / (1000 * 60));
+        
+        if (minutes < 1) return 'Just now';
+        if (minutes < 60) return `${minutes}m ago`;
+        
+        const hours = Math.floor(minutes / 60);
+        return `${hours}h ${minutes % 60}m ago`;
+    }
+
+    updateTable() {
+        const tbody = document.querySelector('#isp-table tbody');
+        tbody.innerHTML = '';
+
+        // Sort by quality score (descending)
+        const sortedISPs = Array.from(this.latestData.entries())
+            .sort((a, b) => parseFloat(b[1].quality_score) - parseFloat(a[1].quality_score));
+
+        sortedISPs.forEach(([ispName, data], index) => {
+            const row = document.createElement('tr');
+            row.className = data.status === 'UP' ? 'status-up' : 'status-down';
+            
+            const qualityClass = this.getQualityClass(parseFloat(data.quality_score));
+            const uptimeToday = this.calculateUptimeToday(ispName);
+            
+            row.innerHTML = `
+                <td>${index + 1}</td>
+                <td><strong>${ispName}</strong><br><small>${data.ip}</small></td>
+                <td><span class="status ${data.status.toLowerCase()}">${data.status}</span></td>
+                <td><span class="quality ${qualityClass}">${data.quality_score}</span></td>
+                <td>${data.avg_latency}ms</td>
+                <td>${data.jitter}ms</td>
+                <td>${data.packet_loss}%</td>
+                <td>${uptimeToday}</td>
+            `;
+            
+            tbody.appendChild(row);
+        });
+    }
+
+    getQualityClass(score) {
+        if (score >= 80) return 'excellent';
+        if (score >= 60) return 'good';
+        if (score >= 40) return 'fair';
+        return 'poor';
+    }
+}
+
+// Initialize the monitor when page loads
+document.addEventListener('DOMContentLoaded', () => {
+    new ISPMonitor();
+});
