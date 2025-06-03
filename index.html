@@ -1,176 +1,94 @@
-// Disclaimer toggle functionality
-function toggleDisclaimer() {
-    const content = document.getElementById('disclaimer-content');
-    const toggle = document.getElementById('disclaimer-toggle');
-    
-    if (content.classList.contains('expanded')) {
-        content.classList.remove('expanded');
-        toggle.classList.remove('expanded');
-        toggle.textContent = '▼';
-    } else {
-        content.classList.add('expanded');
-        toggle.classList.add('expanded');
-        toggle.textContent = '▲';
-    }
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ISP Uptime & Quality Monitor</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>📡 ISP Uptime & Quality Monitor</h1>
+        <p>Real-time monitoring of ISP performance and reliability</p>
+    </header>
 
-class ISPMonitor {
-    constructor() {
-        this.data = [];
-        this.latestData = new Map();
-        this.init();
-    }
+    <main>
+        <section class="disclaimer">
+            <div class="disclaimer-header" onclick="toggleDisclaimer()">
+                <h2>⚠️ Important Disclaimer & Limitations</h2>
+                <span class="disclaimer-toggle" id="disclaimer-toggle">▼</span>
+            </div>
+            <div class="disclaimer-content" id="disclaimer-content">
+                <p><strong>This monitoring tool is NOT 100% accurate and has significant limitations:</strong></p>
+                <ul>
+                    <li><strong>15-minute delays:</strong> Data is only updated every 15 minutes, not real-time</li>
+                    <li><strong>GitHub's free tier limitations:</strong> Limited compute time, potential delays, and service interruptions</li>
+                    <li><strong>Single monitoring location:</strong> Tests only from GitHub's servers, not your actual location</li>
+                    <li><strong>Limited samples:</strong> Only 5 ping samples per check (professional tools use hundreds)</li>
+                    <li><strong>Public IPs only:</strong> Monitors DNS/CDN servers, not actual ISP infrastructure</li>
+                    <li><strong>No geographic diversity:</strong> Results may not reflect your local network conditions</li>
+                    <li><strong>ICMP only:</strong> Only tests ping connectivity, not bandwidth, DNS resolution, or web browsing</li>
+                    <li><strong>GitHub Actions reliability:</strong> Free tier may experience delays, failures, or usage limits</li>
+                </ul>
+                <p><strong>Use this tool for general trends only, not for critical decisions or SLA monitoring.</strong></p>
+                <p>For professional ISP monitoring, consider dedicated services with multiple monitoring locations and comprehensive testing.</p>
+            </div>
+        </section>
 
-    async init() {
-        await this.loadData();
-        this.updateDashboard();
-        
-        // Auto-refresh every 5 minutes
-        setInterval(() => {
-            this.loadData().then(() => this.updateDashboard());
-        }, 5 * 60 * 1000);
-    }
+        <section class="summary">
+            <div class="stat-card">
+                <h3>Total ISPs</h3>
+                <div class="stat-value" id="total-isps">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>Currently Up</h3>
+                <div class="stat-value" id="isps-up">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>Average Latency</h3>
+                <div class="stat-value" id="avg-latency">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>Last Updated</h3>
+                <div class="stat-value" id="last-update">-</div>
+            </div>
+        </section>
 
-    async loadData() {
-        try {
-            const response = await fetch('./data/logs.csv');
-            const csvText = await response.text();
-            this.data = this.parseCSV(csvText);
-            this.processLatestData();
-        } catch (error) {
-            console.error('Error loading data:', error);
-        }
-    }
+        <section class="rankings">
+            <h2>ISP Rankings</h2>
+            <div class="table-container">
+                <table id="isp-table">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>ISP</th>
+                            <th>Status</th>
+                            <th>Quality Score</th>
+                            <th>Latency (ms)</th>
+                            <th>Jitter (ms)</th>
+                            <th>Packet Loss (%)</th>
+                            <th>Uptime Today</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Data will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
 
-    parseCSV(csvText) {
-        const lines = csvText.trim().split('\n');
-        const headers = lines[0].split(',');
-        
-        return lines.slice(1).map(line => {
-            const values = line.split(',');
-            const row = {};
-            headers.forEach((header, index) => {
-                row[header.trim()] = values[index]?.trim() || '';
-            });
-            return row;
-        });
-    }
+        <section class="charts">
+            <h2>Historical Data</h2>
+            <div id="chart-container">
+                <p>Loading historical data...</p>
+            </div>
+        </section>
+    </main>
 
-    processLatestData() {
-        // Get latest reading for each ISP
-        this.latestData.clear();
-        
-        this.data.forEach(row => {
-            const isp = row.isp_name;
-            const timestamp = new Date(row.timestamp);
-            
-            if (!this.latestData.has(isp) || 
-                new Date(this.latestData.get(isp).timestamp) < timestamp) {
-                this.latestData.set(isp, row);
-            }
-        });
-    }
+    <footer>
+        <p>Data updated every 15 minutes via GitHub Actions | <a href="https://github.com/yss1235-why/isp-monitor" target="_blank">View Source</a></p>
+    </footer>
 
-    calculateUptimeToday(ispName) {
-        const today = new Date().toISOString().split('T')[0];
-        const todayData = this.data.filter(row => 
-            row.isp_name === ispName && 
-            row.timestamp.startsWith(today)
-        );
-        
-        if (todayData.length === 0) return '100%';
-        
-        const upCount = todayData.filter(row => row.status === 'UP').length;
-        const uptime = (upCount / todayData.length * 100).toFixed(1);
-        return `${uptime}%`;
-    }
-
-    updateDashboard() {
-        this.updateSummary();
-        this.updateTable();
-    }
-
-    updateSummary() {
-        const totalISPs = this.latestData.size;
-        const ispsUp = Array.from(this.latestData.values())
-            .filter(row => row.status === 'UP').length;
-        
-        const avgLatency = this.calculateAverageLatency();
-        const lastUpdate = this.getLastUpdateTime();
-
-        document.getElementById('total-isps').textContent = totalISPs;
-        document.getElementById('isps-up').textContent = `${ispsUp}/${totalISPs}`;
-        document.getElementById('avg-latency').textContent = `${avgLatency}ms`;
-        document.getElementById('last-update').textContent = lastUpdate;
-    }
-
-    calculateAverageLatency() {
-        const upISPs = Array.from(this.latestData.values())
-            .filter(row => row.status === 'UP');
-        
-        if (upISPs.length === 0) return '0';
-        
-        const totalLatency = upISPs.reduce((sum, row) => 
-            sum + parseFloat(row.avg_latency || 0), 0);
-        
-        return (totalLatency / upISPs.length).toFixed(1);
-    }
-
-    getLastUpdateTime() {
-        if (this.data.length === 0) return 'Never';
-        
-        const latestTimestamp = Math.max(...this.data.map(row => 
-            new Date(row.timestamp).getTime()));
-        
-        const timeDiff = Date.now() - latestTimestamp;
-        const minutes = Math.floor(timeDiff / (1000 * 60));
-        
-        if (minutes < 1) return 'Just now';
-        if (minutes < 60) return `${minutes}m ago`;
-        
-        const hours = Math.floor(minutes / 60);
-        return `${hours}h ${minutes % 60}m ago`;
-    }
-
-    updateTable() {
-        const tbody = document.querySelector('#isp-table tbody');
-        tbody.innerHTML = '';
-
-        // Sort by quality score (descending)
-        const sortedISPs = Array.from(this.latestData.entries())
-            .sort((a, b) => parseFloat(b[1].quality_score) - parseFloat(a[1].quality_score));
-
-        sortedISPs.forEach(([ispName, data], index) => {
-            const row = document.createElement('tr');
-            row.className = data.status === 'UP' ? 'status-up' : 'status-down';
-            
-            const qualityClass = this.getQualityClass(parseFloat(data.quality_score));
-            const uptimeToday = this.calculateUptimeToday(ispName);
-            
-            row.innerHTML = `
-                <td>${index + 1}</td>
-                <td><strong>${ispName}</strong><br><small>${data.ip}</small></td>
-                <td><span class="status ${data.status.toLowerCase()}">${data.status}</span></td>
-                <td><span class="quality ${qualityClass}">${data.quality_score}</span></td>
-                <td>${data.avg_latency}ms</td>
-                <td>${data.jitter}ms</td>
-                <td>${data.packet_loss}%</td>
-                <td>${uptimeToday}</td>
-            `;
-            
-            tbody.appendChild(row);
-        });
-    }
-
-    getQualityClass(score) {
-        if (score >= 80) return 'excellent';
-        if (score >= 60) return 'good';
-        if (score >= 40) return 'fair';
-        return 'poor';
-    }
-}
-
-// Initialize the monitor when page loads
-document.addEventListener('DOMContentLoaded', () => {
-    new ISPMonitor();
-});
+    <script src="script.js"></script>
+</body>
+</html>
