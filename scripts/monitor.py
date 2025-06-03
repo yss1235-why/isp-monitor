@@ -6,35 +6,64 @@ import os
 import statistics
 from datetime import datetime, timezone
 import re
+import socket
+import platform
 
 # ISP Configuration - ADD YOUR ISP IPs HERE
 ISP_CONFIG = {
-    "BSNL_Fibre": "117.199.72.1",
+    "BSNL": "117.199.72.1",
     "Google": "8.8.8.8", 
     "Quad9": "9.9.9.9",
     "OpenDNS": "208.67.222.222",
-    # Add your actual ISP public IPs here
-    # "Your_ISP_Name": "xxx.xxx.xxx.xxx"
 }
 
-def ping_host(host, count=5):
-    """Ping a host and return latency stats"""
+def test_connectivity():
+    """Test basic internet connectivity"""
     try:
-        cmd = ["ping", "-c", str(count), host]
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+        # Try to resolve a domain name
+        socket.gethostbyname('google.com')
+        print("✅ Internet connectivity confirmed")
+        return True
+    except socket.gaierror:
+        print("❌ No internet connectivity detected")
+        return False
+
+def ping_host(host, count=5):
+    """Ping a host and return latency stats with improved error handling"""
+    try:
+        # Detect OS and use appropriate ping command
+        system = platform.system().lower()
+        
+        if system == "windows":
+            cmd = ["ping", "-n", str(count), host]
+        else:
+            cmd = ["ping", "-c", str(count), "-W", "10", host]  # Added timeout
+        
+        print(f"  Running: {' '.join(cmd)}")
+        
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+        
+        print(f"  Return code: {result.returncode}")
+        if result.stderr:
+            print(f"  Stderr: {result.stderr.strip()}")
         
         if result.returncode != 0:
+            print(f"  Ping failed for {host}")
             return None
             
         # Parse ping output
         latencies = []
-        for line in result.stdout.split('\n'):
+        output_lines = result.stdout.split('\n')
+        
+        for line in output_lines:
+            print(f"  Output line: {line}")
             if 'time=' in line:
                 match = re.search(r'time=([0-9.]+)', line)
                 if match:
                     latencies.append(float(match.group(1)))
         
         if not latencies:
+            print(f"  No latency data found in ping output")
             return None
             
         # Calculate statistics
@@ -42,16 +71,46 @@ def ping_host(host, count=5):
         jitter = statistics.stdev(latencies) if len(latencies) > 1 else 0
         packet_loss = ((count - len(latencies)) / count) * 100
         
-        return {
+        result_data = {
             'avg_latency': round(avg_latency, 2),
             'jitter': round(jitter, 2),
             'packet_loss': round(packet_loss, 2),
             'status': 'UP'
         }
         
-    except Exception as e:
-        print(f"Error pinging {host}: {e}")
+        print(f"  Success: {result_data}")
+        return result_data
+        
+    except subprocess.TimeoutExpired:
+        print(f"  Timeout pinging {host}")
         return None
+    except Exception as e:
+        print(f"  Error pinging {host}: {e}")
+        return None
+
+def test_with_curl(host):
+    """Fallback test using curl/wget if ping fails"""
+    try:
+        import time
+        start_time = time.time()
+        
+        # Try HTTP connection test
+        cmd = ["curl", "-s", "-m", "10", f"http://{host}", "-o", "/dev/null"]
+        result = subprocess.run(cmd, capture_output=True, timeout=15)
+        
+        end_time = time.time()
+        response_time = (end_time - start_time) * 1000  # Convert to ms
+        
+        if result.returncode == 0:
+            return {
+                'avg_latency': round(response_time, 2),
+                'jitter': 0,
+                'packet_loss': 0,
+                'status': 'UP'
+            }
+    except:
+        pass
+    return None
 
 def calculate_quality_score(latency, jitter, packet_loss):
     """Calculate ISP quality score (0-100)"""
@@ -113,15 +172,26 @@ def save_to_json(results):
         json.dump(data, f, indent=2)
 
 def main():
-    print(f"Starting ISP monitoring at {datetime.now(timezone.utc)}")
+    print(f"🚀 Starting ISP monitoring at {datetime.now(timezone.utc)}")
+    print(f"🖥️  Platform: {platform.system()} {platform.release()}")
+    
+    # Test basic connectivity first
+    if not test_connectivity():
+        print("❌ No internet connectivity - all ISPs will show as DOWN")
+        print("This is likely a GitHub Actions network issue")
     
     ensure_directories()
     results = []
     
     for isp_name, ip in ISP_CONFIG.items():
-        print(f"Pinging {isp_name} ({ip})...")
+        print(f"\n🔍 Testing {isp_name} ({ip})...")
         
         ping_result = ping_host(ip)
+        
+        # If ping fails, try curl as fallback
+        if not ping_result:
+            print(f"  Ping failed, trying HTTP test...")
+            ping_result = test_with_curl(ip)
         
         if ping_result:
             quality_score = calculate_quality_score(
@@ -153,13 +223,19 @@ def main():
             }
         
         results.append(result)
-        print(f"  {isp_name}: {result['status']} - {result['avg_latency']}ms")
+        print(f"  📊 {isp_name}: {result['status']} - {result['avg_latency']}ms")
     
     # Save results
     save_to_csv(results)
     save_to_json(results)
     
-    print(f"Monitoring complete. {len(results)} ISPs checked.")
+    # Summary
+    up_count = len([r for r in results if r['status'] == 'UP'])
+    print(f"\n✅ Monitoring complete: {up_count}/{len(results)} ISPs UP")
+    
+    if up_count == 0:
+        print("⚠️  All ISPs DOWN - likely GitHub Actions network issue")
+        print("💡 This will usually resolve itself on the next run")
 
 if __name__ == "__main__":
     main()
