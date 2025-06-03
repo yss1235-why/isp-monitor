@@ -1,4 +1,4 @@
-// Disclaimer toggle functionality
+
 function toggleDisclaimer() {
     const content = document.getElementById('disclaimer-content');
     const toggle = document.getElementById('disclaimer-toggle');
