@@ -9,7 +9,7 @@ import re
 
 # ISP Configuration - ADD YOUR ISP IPs HERE
 ISP_CONFIG = {
-    "Cloudflare": "1.1.1.1",
+    "BSNL Fibre": "117.199.72.1",
     "Google": "8.8.8.8", 
     "Quad9": "9.9.9.9",
     "OpenDNS": "208.67.222.222",
