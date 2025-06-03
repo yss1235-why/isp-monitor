@@ -1,17 +1,30 @@
-
+// Disclaimer toggle functionality
 function toggleDisclaimer() {
     const content = document.getElementById('disclaimer-content');
     const toggle = document.getElementById('disclaimer-toggle');
     
     if (content.classList.contains('expanded')) {
+        // Collapse
         content.classList.remove('expanded');
         toggle.classList.remove('expanded');
         toggle.textContent = '▼';
     } else {
+        // Expand
         content.classList.add('expanded');
         toggle.classList.add('expanded');
         toggle.textContent = '▲';
     }
+}
+
+// Initialize disclaimer as collapsed on page load
+function initializeDisclaimer() {
+    const content = document.getElementById('disclaimer-content');
+    const toggle = document.getElementById('disclaimer-toggle');
+    
+    // Ensure it starts collapsed
+    content.classList.remove('expanded');
+    toggle.classList.remove('expanded');
+    toggle.textContent = '▼';
 }
 
 class ISPMonitor {
@@ -22,6 +35,9 @@ class ISPMonitor {
     }
 
     async init() {
+        // Initialize disclaimer state
+        initializeDisclaimer();
+        
         await this.loadData();
         this.updateDashboard();
         
@@ -39,11 +55,29 @@ class ISPMonitor {
             this.processLatestData();
         } catch (error) {
             console.error('Error loading data:', error);
+            // Show error message in dashboard if no data
+            if (this.data.length === 0) {
+                this.showNoDataMessage();
+            }
         }
     }
 
+    showNoDataMessage() {
+        document.getElementById('total-isps').textContent = '0';
+        document.getElementById('isps-up').textContent = '0/0';
+        document.getElementById('avg-latency').textContent = '0ms';
+        document.getElementById('last-update').textContent = 'No data yet';
+        
+        const tbody = document.querySelector('#isp-table tbody');
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 2rem; color: #666;">No monitoring data available yet. GitHub Actions will start collecting data every 15 minutes.</td></tr>';
+    }
+
     parseCSV(csvText) {
+        if (!csvText || csvText.trim() === '') return [];
+        
         const lines = csvText.trim().split('\n');
+        if (lines.length < 2) return []; // Need at least header + 1 data row
+        
         const headers = lines[0].split(',');
         
         return lines.slice(1).map(line => {
@@ -53,7 +87,7 @@ class ISPMonitor {
                 row[header.trim()] = values[index]?.trim() || '';
             });
             return row;
-        });
+        }).filter(row => row.timestamp); // Filter out empty rows
     }
 
     processLatestData() {
@@ -135,6 +169,11 @@ class ISPMonitor {
     updateTable() {
         const tbody = document.querySelector('#isp-table tbody');
         tbody.innerHTML = '';
+
+        if (this.latestData.size === 0) {
+            this.showNoDataMessage();
+            return;
+        }
 
         // Sort by quality score (descending)
         const sortedISPs = Array.from(this.latestData.entries())
