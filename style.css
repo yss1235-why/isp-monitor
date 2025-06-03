@@ -37,6 +37,78 @@ main {
     padding: 0 1rem;
 }
 
+.disclaimer {
+    background: #fff3cd;
+    border: 2px solid #ffeaa7;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.2);
+    overflow: hidden;
+}
+
+.disclaimer-header {
+    padding: 1.5rem 2rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+    transition: background-color 0.3s ease;
+}
+
+.disclaimer-header:hover {
+    background: rgba(255, 234, 167, 0.3);
+}
+
+.disclaimer-header h2 {
+    color: #856404;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.disclaimer-toggle {
+    color: #856404;
+    font-size: 1.2rem;
+    transition: transform 0.3s ease;
+    min-width: 20px;
+}
+
+.disclaimer-toggle.expanded {
+    transform: rotate(180deg);
+}
+
+.disclaimer-content {
+    color: #856404;
+    padding: 0 2rem;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, padding 0.3s ease;
+}
+
+.disclaimer-content.expanded {
+    max-height: 1000px;
+    padding: 0 2rem 2rem 2rem;
+}
+
+.disclaimer-content ul {
+    margin: 1rem 0;
+    padding-left: 1.5rem;
+}
+
+.disclaimer-content li {
+    margin-bottom: 0.5rem;
+}
+
+.disclaimer-content strong {
+    color: #533f03;
+}
+
+.disclaimer-content p {
+    margin-bottom: 1rem;
+}
+
 .summary {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -189,6 +261,22 @@ footer a:hover {
     
     .summary {
         grid-template-columns: 1fr;
+    }
+    
+    .disclaimer-header {
+        padding: 1rem 1.5rem;
+    }
+    
+    .disclaimer-header h2 {
+        font-size: 1.2rem;
+    }
+    
+    .disclaimer-content.expanded {
+        padding: 0 1.5rem 1.5rem 1.5rem;
+    }
+    
+    .disclaimer-content {
+        font-size: 0.9rem;
     }
     
     .rankings {
