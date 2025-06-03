@@ -37,6 +37,7 @@ main {
     padding: 0 1rem;
 }
 
+/* Disclaimer Styling */
 .disclaimer {
     background: #fff3cd;
     border: 2px solid #ffeaa7;
@@ -53,11 +54,12 @@ main {
     justify-content: space-between;
     align-items: center;
     user-select: none;
-    transition: background-color 0.3s ease;
+    transition: background-color 0.2s ease;
+    border-bottom: 1px solid rgba(255, 234, 167, 0.5);
 }
 
 .disclaimer-header:hover {
-    background: rgba(255, 234, 167, 0.3);
+    background: rgba(255, 234, 167, 0.4);
 }
 
 .disclaimer-header h2 {
@@ -66,49 +68,60 @@ main {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    font-size: 1.3rem;
+    font-weight: 600;
 }
 
 .disclaimer-toggle {
     color: #856404;
-    font-size: 1.2rem;
+    font-size: 1.4rem;
+    font-weight: bold;
     transition: transform 0.3s ease;
-    min-width: 20px;
+    min-width: 24px;
+    text-align: center;
 }
 
 .disclaimer-toggle.expanded {
     transform: rotate(180deg);
 }
 
+/* Collapsed by default */
 .disclaimer-content {
-    color: #856404;
-    padding: 0 2rem;
     max-height: 0;
     overflow: hidden;
-    transition: max-height 0.3s ease, padding 0.3s ease;
+    transition: max-height 0.4s ease;
 }
 
 .disclaimer-content.expanded {
-    max-height: 1000px;
-    padding: 0 2rem 2rem 2rem;
+    max-height: 600px;
 }
 
-.disclaimer-content ul {
+.disclaimer-inner {
+    padding: 0 2rem 1.5rem 2rem;
+    color: #856404;
+}
+
+.disclaimer-inner p {
+    margin-bottom: 1rem;
+    line-height: 1.5;
+}
+
+.disclaimer-inner ul {
     margin: 1rem 0;
     padding-left: 1.5rem;
 }
 
-.disclaimer-content li {
-    margin-bottom: 0.5rem;
+.disclaimer-inner li {
+    margin-bottom: 0.6rem;
+    line-height: 1.4;
 }
 
-.disclaimer-content strong {
+.disclaimer-inner strong {
     color: #533f03;
+    font-weight: 600;
 }
 
-.disclaimer-content p {
-    margin-bottom: 1rem;
-}
-
+/* Summary Cards */
 .summary {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -143,6 +156,7 @@ main {
     color: #333;
 }
 
+/* Rankings Table */
 .rankings {
     background: white;
     border-radius: 12px;
@@ -226,6 +240,7 @@ tbody tr:hover {
     background: #dc3545;
 }
 
+/* Charts Section */
 .charts {
     background: white;
     border-radius: 12px;
@@ -239,6 +254,7 @@ tbody tr:hover {
     color: #333;
 }
 
+/* Footer */
 footer {
     text-align: center;
     padding: 2rem;
@@ -254,6 +270,7 @@ footer a:hover {
     text-decoration: underline;
 }
 
+/* Mobile Responsive */
 @media (max-width: 768px) {
     header h1 {
         font-size: 2rem;
@@ -268,14 +285,11 @@ footer a:hover {
     }
     
     .disclaimer-header h2 {
-        font-size: 1.2rem;
+        font-size: 1.1rem;
     }
     
-    .disclaimer-content.expanded {
-        padding: 0 1.5rem 1.5rem 1.5rem;
-    }
-    
-    .disclaimer-content {
+    .disclaimer-inner {
+        padding: 0 1.5rem 1rem 1.5rem;
         font-size: 0.9rem;
     }
     
