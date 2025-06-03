@@ -13,13 +13,13 @@ import urllib.error
 
 # ISP Configuration with HTTP fallback URLs
 ISP_CONFIG = {
-    "BSNL": {
+    "BSNL_fibre": {
         "ip": "117.199.72.1",
-        "http_test": "http://117.199.72.1"  # Try HTTP if ping fails
+        "http_test": "http://117.199.72.1"  
     },
-    "Google": {
-        "ip": "8.8.8.8",
-        "http_test": "https://dns.google"  # Google DNS over HTTPS
+    "RailTail": {
+        "ip": "136.232.74.101",
+        "http_test": "http://136.232.74.101"  
     },
     "Cloudflare": {
         "ip": "1.1.1.1", 
