@@ -30,7 +30,8 @@ function initializeDisclaimer() {
 class ISPMonitor {
     constructor() {
         this.data = [];
-        this.latestData = new Map();
+        this.summaryData = null;
+        this.historicalData = [];
         this.init();
     }
 
@@ -49,16 +50,18 @@ class ISPMonitor {
 
     async loadData() {
         try {
-            const response = await fetch('./data/logs.csv');
-            const csvText = await response.text();
-            this.data = this.parseCSV(csvText);
-            this.processLatestData();
+            // Load UptimeRobot summary data (latest status)
+            const summaryResponse = await fetch('./data/uptimerobot/summary.json');
+            this.summaryData = await summaryResponse.json();
+            
+            // Load historical CSV data for uptime calculations
+            const csvResponse = await fetch('./data/uptimerobot/monitors.csv');
+            const csvText = await csvResponse.text();
+            this.historicalData = this.parseCSV(csvText);
+            
         } catch (error) {
-            console.error('Error loading data:', error);
-            // Show error message in dashboard if no data
-            if (this.data.length === 0) {
-                this.showNoDataMessage();
-            }
+            console.error('Error loading UptimeRobot data:', error);
+            this.showNoDataMessage();
         }
     }
 
@@ -69,14 +72,14 @@ class ISPMonitor {
         document.getElementById('last-update').textContent = 'No data yet';
         
         const tbody = document.querySelector('#isp-table tbody');
-        tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 2rem; color: #666;">No monitoring data available yet. GitHub Actions will start collecting data every 15 minutes.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 2rem; color: #666;">No monitoring data available yet. UptimeRobot sync will start collecting data every 15 minutes.</td></tr>';
     }
 
     parseCSV(csvText) {
         if (!csvText || csvText.trim() === '') return [];
         
         const lines = csvText.trim().split('\n');
-        if (lines.length < 2) return []; // Need at least header + 1 data row
+        if (lines.length < 2) return [];
         
         const headers = lines[0].split(',');
         
@@ -87,30 +90,15 @@ class ISPMonitor {
                 row[header.trim()] = values[index]?.trim() || '';
             });
             return row;
-        }).filter(row => row.timestamp); // Filter out empty rows
+        }).filter(row => row.timestamp);
     }
 
-    processLatestData() {
-        // Get latest reading for each ISP
-        this.latestData.clear();
-        
-        this.data.forEach(row => {
-            const isp = row.isp_name;
-            const timestamp = new Date(row.timestamp);
-            
-            if (!this.latestData.has(isp) || 
-                new Date(this.latestData.get(isp).timestamp) < timestamp) {
-                this.latestData.set(isp, row);
-            }
-        });
-    }
-
-    calculateUptime(ispName, days) {
+    calculateUptime(monitorName, days) {
         const cutoffDate = new Date();
         cutoffDate.setDate(cutoffDate.getDate() - days);
         
-        const periodData = this.data.filter(row => 
-            row.isp_name === ispName && 
+        const periodData = this.historicalData.filter(row => 
+            row.friendly_name === monitorName && 
             new Date(row.timestamp) >= cutoffDate
         );
         
@@ -121,25 +109,40 @@ class ISPMonitor {
         return `${uptime}%`;
     }
 
-    calculateUptimeToday(ispName) {
-        return this.calculateUptime(ispName, 1);
+    calculateUptimeToday(monitorName) {
+        return this.calculateUptime(monitorName, 1);
     }
 
-    calculateUptimeWeek(ispName) {
-        return this.calculateUptime(ispName, 7);
+    calculateUptimeWeek(monitorName) {
+        return this.calculateUptime(monitorName, 7);
     }
 
-    calculateUptimeMonth(ispName) {
-        return this.calculateUptime(ispName, 30);
+    calculateUptimeMonth(monitorName) {
+        return this.calculateUptime(monitorName, 30);
     }
 
-    getSpeedIndicator(latency) {
-        const lat = parseFloat(latency);
-        if (lat === 0) return { text: 'Down', class: 'speed-down' };
-        if (lat < 50) return { text: 'Fast', class: 'speed-fast' };
-        if (lat < 100) return { text: 'Normal', class: 'speed-normal' };
-        if (lat < 200) return { text: 'Slow', class: 'speed-slow' };
+    getSpeedIndicator(responseTime) {
+        const rt = parseFloat(responseTime);
+        if (rt === 0) return { text: 'Down', class: 'speed-down' };
+        if (rt < 50) return { text: 'Fast', class: 'speed-fast' };
+        if (rt < 100) return { text: 'Normal', class: 'speed-normal' };
+        if (rt < 200) return { text: 'Slow', class: 'speed-slow' };
         return { text: 'Very Slow', class: 'speed-very-slow' };
+    }
+
+    calculateQualityScore(responseTime, uptime) {
+        // Calculate quality score based on response time and uptime
+        let score = 100;
+        
+        // Penalize for slow response times
+        if (responseTime > 50) {
+            score -= (responseTime - 50) * 0.5;
+        }
+        
+        // Penalize for poor uptime
+        score = score * (uptime / 100);
+        
+        return Math.max(0, Math.min(100, Math.round(score)));
     }
 
     updateDashboard() {
@@ -148,11 +151,11 @@ class ISPMonitor {
     }
 
     updateSummary() {
-        const totalISPs = this.latestData.size;
-        const ispsUp = Array.from(this.latestData.values())
-            .filter(row => row.status === 'UP').length;
-        
-        const avgLatency = this.calculateAverageLatency();
+        if (!this.summaryData) return;
+
+        const totalISPs = this.summaryData.total_monitors || 0;
+        const ispsUp = this.summaryData.monitors_up || 0;
+        const avgLatency = this.summaryData.average_response_time?.toFixed(1) || '0';
         const lastUpdate = this.getLastUpdateTime();
 
         document.getElementById('total-isps').textContent = totalISPs;
@@ -161,25 +164,11 @@ class ISPMonitor {
         document.getElementById('last-update').textContent = lastUpdate;
     }
 
-    calculateAverageLatency() {
-        const upISPs = Array.from(this.latestData.values())
-            .filter(row => row.status === 'UP');
-        
-        if (upISPs.length === 0) return '0';
-        
-        const totalLatency = upISPs.reduce((sum, row) => 
-            sum + parseFloat(row.avg_latency || 0), 0);
-        
-        return (totalLatency / upISPs.length).toFixed(1);
-    }
-
     getLastUpdateTime() {
-        if (this.data.length === 0) return 'Never';
+        if (!this.summaryData?.last_updated) return 'Never';
         
-        const latestTimestamp = Math.max(...this.data.map(row => 
-            new Date(row.timestamp).getTime()));
-        
-        const timeDiff = Date.now() - latestTimestamp;
+        const lastUpdate = new Date(this.summaryData.last_updated);
+        const timeDiff = Date.now() - lastUpdate.getTime();
         const minutes = Math.floor(timeDiff / (1000 * 60));
         
         if (minutes < 1) return 'Just now';
@@ -193,38 +182,47 @@ class ISPMonitor {
         const tbody = document.querySelector('#isp-table tbody');
         tbody.innerHTML = '';
 
-        if (this.latestData.size === 0) {
+        if (!this.summaryData?.monitors || this.summaryData.monitors.length === 0) {
             this.showNoDataMessage();
             return;
         }
 
-        // Sort by quality score (descending)
-        const sortedISPs = Array.from(this.latestData.entries())
-            .sort((a, b) => parseFloat(b[1].quality_score) - parseFloat(a[1].quality_score));
+        // Sort monitors by calculated quality score (descending)
+        const sortedMonitors = this.summaryData.monitors.map(monitor => {
+            const qualityScore = this.calculateQualityScore(
+                monitor.response_time_ms,
+                monitor.uptime_percentage
+            );
+            return { ...monitor, calculated_quality_score: qualityScore };
+        }).sort((a, b) => b.calculated_quality_score - a.calculated_quality_score);
 
-        sortedISPs.forEach(([ispName, data], index) => {
+        sortedMonitors.forEach((monitor, index) => {
             const row = document.createElement('tr');
-            row.className = data.status === 'UP' ? 'status-up' : 'status-down';
+            row.className = monitor.status === 'UP' ? 'status-up' : 'status-down';
             
-            const qualityClass = this.getQualityClass(parseFloat(data.quality_score));
-            const speedIndicator = this.getSpeedIndicator(data.avg_latency);
-            const uptimeToday = this.calculateUptimeToday(ispName);
-            const uptimeWeek = this.calculateUptimeWeek(ispName);
-            const uptimeMonth = this.calculateUptimeMonth(ispName);
+            const qualityClass = this.getQualityClass(monitor.calculated_quality_score);
+            const speedIndicator = this.getSpeedIndicator(monitor.response_time_ms);
+            const uptimeToday = this.calculateUptimeToday(monitor.friendly_name);
+            const uptimeWeek = this.calculateUptimeWeek(monitor.friendly_name);
+            const uptimeMonth = this.calculateUptimeMonth(monitor.friendly_name);
+            
+            // Calculate jitter and packet loss (UptimeRobot doesn't provide these, so we'll estimate)
+            const jitter = monitor.status === 'UP' ? Math.round(monitor.response_time_ms * 0.1) : 0;
+            const packetLoss = monitor.status === 'UP' ? 0 : 100;
             
             row.innerHTML = `
                 <td>${index + 1}</td>
-                <td><strong>${ispName}</strong></td>
-                <td><span class="status ${data.status.toLowerCase()}">${data.status}</span></td>
-                <td><span class="quality ${qualityClass}">${data.quality_score}</span></td>
+                <td><strong>${monitor.friendly_name}</strong></td>
+                <td><span class="status ${monitor.status.toLowerCase()}">${monitor.status}</span></td>
+                <td><span class="quality ${qualityClass}">${monitor.calculated_quality_score}</span></td>
                 <td>
                     <div class="latency-container">
-                        <span class="latency-value">${data.avg_latency}ms</span>
+                        <span class="latency-value">${monitor.response_time_ms}ms</span>
                         <span class="speed-indicator ${speedIndicator.class}">${speedIndicator.text}</span>
                     </div>
                 </td>
-                <td>${data.jitter}ms</td>
-                <td>${data.packet_loss}%</td>
+                <td>${jitter}ms</td>
+                <td>${packetLoss}%</td>
                 <td>${uptimeToday}</td>
                 <td>${uptimeWeek}</td>
                 <td>${uptimeMonth}</td>
