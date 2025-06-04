@@ -1,5 +1,5 @@
 <!-- File: index.html (root directory) -->
-<!-- ISP monitoring dashboard displaying UptimeRobot monitor data -->
+<!-- Clean ISP monitoring UI displaying UptimeRobot data (no branding) -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,7 +11,7 @@
 <body>
     <header>
         <h1>📡 Ukhrul ISP Uptime & Quality Monitor</h1>
-        <p>Real-time monitoring of ISP performance and reliability via UptimeRobot global network</p>
+        <p>Real-time monitoring of ISP performance and reliability, Choose your ISP wisely.</p>
     </header>
 
     <main>
@@ -22,26 +22,26 @@
             </div>
             <div class="disclaimer-content" id="disclaimer-content">
                 <div class="disclaimer-inner">
-                    <p><strong>This monitoring tool displays UptimeRobot data and has the following limitations:</strong></p>
+                    <p><strong>This monitoring tool provides general network monitoring and has limitations:</strong></p>
                     <ul>
-                        <li><strong>5-minute intervals:</strong> UptimeRobot checks every 5 minutes (free tier)</li>
-                        <li><strong>External perspective:</strong> Tests from UptimeRobot's global network, not your local network</li>
-                        <li><strong>Limited free tier:</strong> 50 monitors maximum, basic features only</li>
-                        <li><strong>Geographic variance:</strong> Results may differ from your local network experience</li>
-                        <li><strong>Monitor types:</strong> Limited to HTTP/HTTPS, Ping, Port, and Keyword monitoring</li>
-                        <li><strong>Data sync delay:</strong> Dashboard updates every 30 minutes via GitHub Actions</li>
-                        <li><strong>No bandwidth testing:</strong> Only tests connectivity and response time</li>
-                        <li><strong>Single data source:</strong> Relies entirely on UptimeRobot service availability</li>
+                        <li><strong>5-minute intervals:</strong> Data is updated every 5 minutes based on monitoring checks</li>
+                        <li><strong>External perspective:</strong> Tests from external monitoring locations, not your local network</li>
+                        <li><strong>Geographic variance:</strong> Results may not reflect your exact local network conditions</li>
+                        <li><strong>Limited samples:</strong> Based on periodic checks, not continuous monitoring</li>
+                        <li><strong>Service dependencies:</strong> Relies on external monitoring service availability</li>
+                        <li><strong>No bandwidth testing:</strong> Only tests connectivity and response time, not speed</li>
+                        <li><strong>Single data source:</strong> Results from one monitoring perspective</li>
+                        <li><strong>Network variables:</strong> Many factors can affect internet connectivity</li>
                     </ul>
-                    <p><strong>Use this tool for general monitoring trends only, not for critical decisions or SLA monitoring.</strong></p>
-                    <p>For comprehensive ISP monitoring, consider multiple monitoring services and local network testing.</p>
+                    <p><strong>Use this tool for general trends only, not for critical decisions or SLA monitoring.</strong></p>
+                    <p>For comprehensive network analysis, consider multiple monitoring tools and local testing.</p>
                 </div>
             </div>
         </section>
 
         <section class="summary">
             <div class="stat-card">
-                <h3>Total Monitors</h3>
+                <h3>Total ISPs</h3>
                 <div class="stat-value" id="total-isps">-</div>
             </div>
             <div class="stat-card">
@@ -49,7 +49,7 @@
                 <div class="stat-value" id="isps-up">-</div>
             </div>
             <div class="stat-card">
-                <h3>Average Response Time</h3>
+                <h3>Average Latency</h3>
                 <div class="stat-value" id="avg-latency">-</div>
             </div>
             <div class="stat-card">
@@ -59,52 +59,38 @@
         </section>
 
         <section class="rankings">
-            <h2>Monitor Rankings</h2>
+            <h2>ISP Rankings</h2>
             <div class="table-container">
                 <table id="isp-table">
                     <thead>
                         <tr>
                             <th>Rank</th>
-                            <th>Monitor</th>
+                            <th>ISP</th>
                             <th>Status</th>
                             <th>Quality Score</th>
-                            <th>Response Time (ms)</th>
+                            <th>Latency (ms)</th>
                             <th>Jitter (ms)</th>
                             <th>Packet Loss (%)</th>
-                            <th>Uptime %</th>
+                            <th>Uptime Today</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- Data will be populated by JavaScript from UptimeRobot API -->
+                        <!-- Data will be populated by JavaScript from monitoring API -->
                     </tbody>
                 </table>
             </div>
         </section>
 
         <section class="charts">
-            <h2>Monitoring Data Source</h2>
+            <h2>Historical Data</h2>
             <div id="chart-container">
-                <div style="background: #e3f2fd; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #1976d2;">
-                    <h3 style="color: #1976d2; margin-bottom: 1rem;">🤖 UptimeRobot Monitoring</h3>
-                    <p><strong>Source:</strong> UptimeRobot Global Network</p>
-                    <p><strong>Frequency:</strong> Every 5 minutes</p>
-                    <p><strong>Data:</strong> Uptime, response time, status</p>
-                    <p><strong>Perspective:</strong> External monitoring from multiple locations</p>
-                    <p><strong>Sync:</strong> Dashboard updates every 30 minutes</p>
-                    <div style="margin-top: 1rem; padding: 0.5rem; background: #d4edda; color: #155724; border-radius: 4px; text-align: center; font-weight: bold;">
-                        📊 Professional External Monitoring
-                    </div>
-                </div>
-                
-                <p style="margin-top: 2rem; color: #666;">
-                    This dashboard displays your UptimeRobot monitors with professional uptime statistics from their global monitoring network.
-                </p>
+                <p>Loading historical data...</p>
             </div>
         </section>
     </main>
 
     <footer>
-        <p>Data from UptimeRobot API updated every 30 minutes | Developed by Innovative Archive | <a href="https://github.com/yss1235-why/isp-monitor" target="_blank">View Source</a></p>
+        <p>Data updated every 5 minutes via monitoring service | Developed by Innovative Archive | <a href="https://github.com/yss1235-why/isp-monitor" target="_blank">View Source</a></p>
     </footer>
 
     <script src="script.js"></script>
