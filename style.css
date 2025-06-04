@@ -1,5 +1,5 @@
 /* File: style.css (root directory) */
-/* Enhanced styles with UptimeRobot integration */
+/* Original styles maintained with minimal UptimeRobot support */
 
 * {
     margin: 0;
@@ -96,7 +96,7 @@ main {
 }
 
 .disclaimer-content.expanded {
-    max-height: 800px;
+    max-height: 600px;
 }
 
 .disclaimer-inner {
@@ -122,13 +122,6 @@ main {
 .disclaimer-inner strong {
     color: #533f03;
     font-weight: 600;
-}
-
-.disclaimer-inner h3 {
-    color: #533f03;
-    margin-top: 1.5rem;
-    margin-bottom: 0.8rem;
-    font-size: 1.1rem;
 }
 
 /* Summary Cards */
@@ -166,46 +159,6 @@ main {
     color: #333;
 }
 
-.stat-card small {
-    font-size: 0.8rem;
-    color: #888;
-    margin-top: 0.5rem;
-    display: block;
-}
-
-/* UptimeRobot Section Styling */
-.uptimerobot-section {
-    margin-bottom: 2rem;
-    animation: fadeIn 0.5s ease-in;
-}
-
-.uptimerobot-setup {
-    margin-bottom: 2rem;
-}
-
-.external-badge {
-    font-size: 0.8rem;
-    background: #e3f2fd;
-    color: #1976d2;
-    padding: 0.2rem 0.6rem;
-    border-radius: 12px;
-    font-weight: normal;
-}
-
-.url-code {
-    font-family: 'Courier New', monospace;
-    font-size: 0.85rem;
-    background: #f5f5f5;
-    padding: 0.2rem 0.4rem;
-    border-radius: 4px;
-    word-break: break-all;
-    max-width: 200px;
-    display: inline-block;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
 /* Rankings Table */
 .rankings {
     background: white;
@@ -218,12 +171,6 @@ main {
 .rankings h2 {
     margin-bottom: 1.5rem;
     color: #333;
-}
-
-.rankings p {
-    margin-bottom: 1.5rem;
-    color: #666;
-    font-size: 0.95rem;
 }
 
 .table-container {
@@ -260,7 +207,6 @@ tbody tr:hover {
     font-size: 0.8rem;
     font-weight: bold;
     text-transform: uppercase;
-    transition: all 0.2s ease;
 }
 
 .status.up {
@@ -278,13 +224,6 @@ tbody tr:hover {
     border-radius: 20px;
     font-weight: bold;
     color: white;
-    transition: all 0.2s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.quality:hover {
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    transform: translateY(-1px);
 }
 
 .quality.excellent {
@@ -318,57 +257,32 @@ tbody tr:hover {
     color: #333;
 }
 
-/* Setup Message Styling */
-.uptimerobot-setup code {
+/* Minimal styling for monitoring status indicators */
+#internal-status, #external-status {
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+/* Grid layout for monitoring cards */
+.charts #chart-container > div:first-child {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.charts #chart-container > div:first-child > div {
     background: #f8f9fa;
-    padding: 0.2rem 0.4rem;
-    border-radius: 4px;
-    font-family: 'Courier New', monospace;
-    font-size: 0.9rem;
+    padding: 1.5rem;
+    border-radius: 8px;
 }
 
-.uptimerobot-setup ol {
-    line-height: 1.6;
+.charts #chart-container > div:first-child h3 {
+    margin-bottom: 1rem;
 }
 
-.uptimerobot-setup ol li {
-    margin-bottom: 0.8rem;
-}
-
-/* Enhanced Table Styling for UptimeRobot */
-#uptimerobot-table th {
-    background: #f1f3f4;
-    color: #333;
-    font-weight: 600;
-}
-
-#uptimerobot-table .url-code {
-    max-width: 150px;
-}
-
-#uptimerobot-table .status.up {
-    background: #e8f5e8;
-    color: #2e7d32;
-}
-
-#uptimerobot-table .status.down {
-    background: #ffebee;
-    color: #c62828;
-}
-
-/* Header badges */
-header div {
-    margin-top: 1rem;
-    font-size: 0.9rem;
-    opacity: 0.8;
-}
-
-header span {
-    background: rgba(255, 255, 255, 0.2);
-    padding: 0.3rem 0.8rem;
-    border-radius: 15px;
-    margin: 0 0.2rem;
-    display: inline-block;
+.charts #chart-container > div:first-child p {
+    margin-bottom: 0.5rem;
 }
 
 /* Footer */
@@ -387,86 +301,10 @@ footer a:hover {
     text-decoration: underline;
 }
 
-footer div {
-    margin-top: 1rem;
-    font-size: 0.85rem;
-    opacity: 0.8;
-}
-
-/* Animation for smooth transitions */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Grid layouts for monitoring status */
-.charts #chart-container > div:first-child {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-}
-
-.charts #chart-container > div:first-child > div {
-    background: #f8f9fa;
-    padding: 1.5rem;
-    border-radius: 8px;
-    border-left: 4px solid #17a2b8;
-}
-
-.charts #chart-container > div:first-child > div:last-child {
-    border-left-color: #28a745;
-}
-
-.charts #chart-container > div:first-child h3 {
-    margin-bottom: 1rem;
-}
-
-.charts #chart-container > div:first-child p {
-    margin-bottom: 0.5rem;
-}
-
-.charts #chart-container > div:first-child div[id$="-status"] {
-    margin-top: 1rem;
-    padding: 0.5rem;
-    border-radius: 4px;
-    text-align: center;
-    font-weight: bold;
-}
-
-.charts #chart-container > div:last-child {
-    margin-top: 2rem;
-    padding: 1.5rem;
-    background: #e3f2fd;
-    border-radius: 8px;
-}
-
-.charts #chart-container > div:last-child h3 {
-    color: #1976d2;
-    margin-bottom: 1rem;
-}
-
-.charts #chart-container > div:last-child ul {
-    margin-left: 1.5rem;
-    line-height: 1.6;
-}
-
 /* Mobile Responsive */
 @media (max-width: 768px) {
     header h1 {
         font-size: 2rem;
-    }
-    
-    header span {
-        display: block;
-        margin: 0.2rem auto;
-        width: fit-content;
     }
     
     .summary {
@@ -496,16 +334,6 @@ footer div {
     
     th, td {
         padding: 0.5rem 0.3rem;
-    }
-    
-    .url-code {
-        max-width: 100px;
-        font-size: 0.75rem;
-    }
-    
-    .external-badge {
-        font-size: 0.7rem;
-        padding: 0.1rem 0.4rem;
     }
     
     .charts #chart-container > div:first-child {
