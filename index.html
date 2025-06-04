@@ -1,5 +1,3 @@
-<!-- File: index.html (root directory) -->
-<!-- Clean ISP monitoring UI with GitHub Actions synced UptimeRobot data -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -22,19 +20,19 @@
             </div>
             <div class="disclaimer-content" id="disclaimer-content">
                 <div class="disclaimer-inner">
-                    <p><strong>This monitoring tool provides network monitoring data with the following limitations:</strong></p>
+                    <p><strong>This monitoring tool is NOT 100% accurate and has significant limitations:</strong></p>
                     <ul>
-                        <li><strong>15-minute intervals:</strong> Data is updated every 15 minutes via automated monitoring</li>
-                        <li><strong>External perspective:</strong> Tests from external monitoring locations worldwide</li>
-                        <li><strong>Geographic variance:</strong> Results may not reflect your exact local network conditions</li>
-                        <li><strong>Monitoring scope:</strong> Tests connectivity, response time, and uptime patterns</li>
-                        <li><strong>Service dependencies:</strong> Relies on external monitoring infrastructure availability</li>
-                        <li><strong>No bandwidth testing:</strong> Only tests connectivity and response time, not connection speed</li>
-                        <li><strong>Network variables:</strong> Many factors can affect internet connectivity and performance</li>
-                        <li><strong>Data synchronization:</strong> Dashboard updates based on scheduled monitoring checks</li>
+                        <li><strong>15-minute delays:</strong> Data is only updated every 15 minutes, not real-time</li>
+                        <li><strong>GitHub's free tier limitations:</strong> Limited compute time, potential delays, and service interruptions</li>
+                        <li><strong>Single monitoring location:</strong> Tests only from GitHub's servers, not your actual location</li>
+                        <li><strong>Limited samples:</strong> Only 5 ping samples per check (professional tools use hundreds)</li>
+                        <li><strong>Public IPs only:</strong> Monitors DNS/CDN servers, not actual ISP infrastructure</li>
+                        <li><strong>No geographic diversity:</strong> Results may not reflect your local network conditions</li>
+                        <li><strong>ICMP only:</strong> Only tests ping connectivity, not bandwidth, DNS resolution, or web browsing</li>
+                        <li><strong>GitHub Actions reliability:</strong> Free tier may experience delays, failures, or usage limits</li>
                     </ul>
-                    <p><strong>Use this tool for general network trends and comparison only, not for critical decisions.</strong></p>
-                    <p>For comprehensive network analysis, consider multiple monitoring approaches and local testing methods.</p>
+                    <p><strong>Use this tool for general trends only, not for critical decisions or SLA monitoring.</strong></p>
+                    <p>For professional ISP monitoring, consider dedicated services with multiple monitoring locations and comprehensive testing.</p>
                 </div>
             </div>
         </section>
@@ -68,14 +66,16 @@
                             <th>ISP</th>
                             <th>Status</th>
                             <th>Quality Score</th>
-                            <th>Latency (ms)</th>
+                            <th>Latency & Speed</th>
                             <th>Jitter (ms)</th>
                             <th>Packet Loss (%)</th>
-                            <th>Uptime Today</th>
+                            <th>Today</th>
+                            <th>Week</th>
+                            <th>Month</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- Data will be populated by JavaScript from synced monitoring data -->
+                        <!-- Data will be populated by JavaScript -->
                     </tbody>
                 </table>
             </div>
@@ -90,7 +90,7 @@
     </main>
 
     <footer>
-        <p>Data updated every 15 minutes via automated monitoring | Developed by Innovative Archive | <a href="https://github.com/yss1235-why/isp-monitor" target="_blank">View Source</a></p>
+        <p>Data updated every 15 minutes via GitHub Actions| Developed by innovative Archive | <a href="https://github.com/yss1235-why/isp-monitor" target="_blank">View Source</a></p>
     </footer>
 
     <script src="script.js"></script>
