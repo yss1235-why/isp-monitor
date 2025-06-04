@@ -1,5 +1,5 @@
 /* File: style.css (root directory) */
-/* Original design maintained for UptimeRobot data display */
+/* Clean ISP monitoring styles for UptimeRobot data (no branding) */
 
 * {
     margin: 0;
@@ -257,42 +257,6 @@ tbody tr:hover {
     color: #333;
 }
 
-/* UptimeRobot info styling */
-.charts #chart-container > div:first-child {
-    background: #e3f2fd;
-    padding: 1.5rem;
-    border-radius: 8px;
-    border-left: 4px solid #1976d2;
-    margin-bottom: 2rem;
-}
-
-.charts #chart-container > div:first-child h3 {
-    color: #1976d2;
-    margin-bottom: 1rem;
-}
-
-.charts #chart-container > div:first-child p {
-    margin-bottom: 0.5rem;
-}
-
-/* No data message styling */
-tbody td ol {
-    margin: 0.5rem 0;
-    padding-left: 1.5rem;
-}
-
-tbody td ol li {
-    margin-bottom: 0.3rem;
-}
-
-tbody td code {
-    background: #f8f9fa;
-    padding: 0.2rem 0.4rem;
-    border-radius: 4px;
-    font-family: 'Courier New', monospace;
-    font-size: 0.85rem;
-}
-
 /* Footer */
 footer {
     text-align: center;
@@ -342,13 +306,5 @@ footer a:hover {
     
     th, td {
         padding: 0.5rem 0.3rem;
-    }
-    
-    tbody td {
-        font-size: 0.85rem;
-    }
-    
-    .charts #chart-container > div:first-child {
-        padding: 1rem;
     }
 }
