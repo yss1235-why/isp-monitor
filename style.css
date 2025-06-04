@@ -1,5 +1,5 @@
 /* File: style.css (root directory) */
-/* Original styles maintained with minimal UptimeRobot support */
+/* Original design maintained for UptimeRobot data display */
 
 * {
     margin: 0;
@@ -257,32 +257,40 @@ tbody tr:hover {
     color: #333;
 }
 
-/* Minimal styling for monitoring status indicators */
-#internal-status, #external-status {
-    font-weight: bold;
-    transition: all 0.3s ease;
-}
-
-/* Grid layout for monitoring cards */
+/* UptimeRobot info styling */
 .charts #chart-container > div:first-child {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1.5rem;
+    background: #e3f2fd;
+    padding: 1.5rem;
+    border-radius: 8px;
+    border-left: 4px solid #1976d2;
     margin-bottom: 2rem;
 }
 
-.charts #chart-container > div:first-child > div {
-    background: #f8f9fa;
-    padding: 1.5rem;
-    border-radius: 8px;
-}
-
 .charts #chart-container > div:first-child h3 {
+    color: #1976d2;
     margin-bottom: 1rem;
 }
 
 .charts #chart-container > div:first-child p {
     margin-bottom: 0.5rem;
+}
+
+/* No data message styling */
+tbody td ol {
+    margin: 0.5rem 0;
+    padding-left: 1.5rem;
+}
+
+tbody td ol li {
+    margin-bottom: 0.3rem;
+}
+
+tbody td code {
+    background: #f8f9fa;
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
 }
 
 /* Footer */
@@ -336,11 +344,11 @@ footer a:hover {
         padding: 0.5rem 0.3rem;
     }
     
-    .charts #chart-container > div:first-child {
-        grid-template-columns: 1fr;
+    tbody td {
+        font-size: 0.85rem;
     }
     
-    .charts #chart-container > div:first-child > div {
+    .charts #chart-container > div:first-child {
         padding: 1rem;
     }
 }
