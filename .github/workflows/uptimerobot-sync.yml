@@ -1,11 +1,11 @@
 # File: .github/workflows/uptimerobot-sync.yml
-# UptimeRobot data sync workflow for ISP monitoring integration
+# UptimeRobot data sync every 15 minutes using existing environment secret
 
 name: UptimeRobot Data Sync
 
 on:
   schedule:
-    - cron: '*/30 * * * *'  # Every 30 minutes (respects 1/minute rate limit)
+    - cron: '*/15 * * * *'  # Every 15 minutes
   workflow_dispatch:  # Manual trigger
 
 jobs:
@@ -15,6 +15,9 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
       
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -39,8 +42,37 @@ jobs:
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action - UptimeRobot Sync"
+        
+        # Pull latest changes first
+        git pull origin main --rebase --autostash || git pull origin master --rebase --autostash || true
+        
+        # Add data files
         git add data/uptimerobot/
-        git diff --staged --quiet || git commit -m "Update UptimeRobot monitoring data - $(date)"
-        git push
+        
+        # Check if there are changes to commit
+        if git diff --staged --quiet; then
+          echo "No changes to commit"
+          exit 0
+        fi
+        
+        # Commit changes
+        git commit -m "Update UptimeRobot monitoring data - $(date '+%Y-%m-%d %H:%M UTC')"
+        
+        # Push with retry logic
+        for i in {1..3}; do
+          if git push; then
+            echo "Successfully pushed on attempt $i"
+            break
+          else
+            echo "Push failed on attempt $i, retrying..."
+            git pull origin main --rebase --autostash || git pull origin master --rebase --autostash || true
+            sleep 5
+          fi
+          
+          if [ $i -eq 3 ]; then
+            echo "Failed to push after 3 attempts"
+            exit 1
+          fi
+        done
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
