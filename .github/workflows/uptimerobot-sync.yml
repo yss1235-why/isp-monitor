@@ -1,5 +1,5 @@
 # File: .github/workflows/uptimerobot-sync.yml
-# UptimeRobot data sync every 15 minutes using existing environment secret
+# Updated to use environment secret
 
 name: UptimeRobot Data Sync
 
@@ -11,6 +11,7 @@ on:
 jobs:
   sync-uptimerobot:
     runs-on: ubuntu-latest
+    environment: production  # Use the environment where your secret is stored
     
     steps:
     - name: Checkout repository
