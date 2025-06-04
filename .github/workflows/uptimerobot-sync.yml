@@ -1,0 +1,46 @@
+# File: .github/workflows/uptimerobot-sync.yml
+# UptimeRobot data sync workflow for ISP monitoring integration
+
+name: UptimeRobot Data Sync
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'  # Every 30 minutes (respects 1/minute rate limit)
+  workflow_dispatch:  # Manual trigger
+
+jobs:
+  sync-uptimerobot:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests
+        
+    - name: Create data directories
+      run: |
+        mkdir -p data/uptimerobot
+        
+    - name: Sync UptimeRobot data
+      run: python scripts/sync_uptimerobot.py
+      env:
+        UPTIMEROBOT_API_KEY: ${{ secrets.UPTIMEROBOT_API_KEY }}
+        
+    - name: Commit and push changes
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action - UptimeRobot Sync"
+        git add data/uptimerobot/
+        git diff --staged --quiet || git commit -m "Update UptimeRobot monitoring data - $(date)"
+        git push
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
