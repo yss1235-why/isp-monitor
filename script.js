@@ -1,8 +1,5 @@
 // File: script.js (root directory)
-// Clean ISP Monitor using UptimeRobot API data (no branding)
-
-// UptimeRobot API key (hardcoded)
-const UPTIMEROBOT_API_KEY = "u2969607-0a95611c9802fc89b7c4ba93";
+// ISP Monitor using GitHub Actions synced UptimeRobot data (every 15 minutes)
 
 // Disclaimer toggle functionality
 function toggleDisclaimer() {
@@ -28,54 +25,45 @@ function initializeDisclaimer() {
     toggle.textContent = '▼';
 }
 
-// Main ISP Monitor Class using UptimeRobot data
+// Main ISP Monitor Class using synced UptimeRobot data
 class ISPMonitor {
     constructor() {
         this.monitors = [];
         this.latestData = new Map();
+        this.lastSyncTime = null;
         this.init();
     }
 
     async init() {
         initializeDisclaimer();
-        await this.loadUptimeRobotData();
+        await this.loadSyncedData();
         this.updateDashboard();
         
-        // Auto-refresh every 5 minutes
+        // Auto-refresh every 2 minutes to check for new synced data
         setInterval(() => {
-            this.loadUptimeRobotData().then(() => {
+            this.loadSyncedData().then(() => {
                 this.updateDashboard();
             });
-        }, 5 * 60 * 1000);
+        }, 2 * 60 * 1000);
     }
 
-    async loadUptimeRobotData() {
+    async loadSyncedData() {
         try {
-            const formData = new FormData();
-            formData.append('api_key', UPTIMEROBOT_API_KEY);
-            formData.append('format', 'json');
-            formData.append('all_time_uptime_ratio', '1');
-            formData.append('custom_uptime_ratios', '1-7-30');
-            formData.append('response_times', '1');
-            formData.append('response_times_limit', '5');
-
-            const response = await fetch('https://api.uptimerobot.com/v2/getMonitors', {
-                method: 'POST',
-                body: formData
-            });
-
-            const data = await response.json();
+            // Load from GitHub Actions synced data
+            const response = await fetch('./data/uptimerobot/summary.json');
             
-            if (data.stat === 'ok') {
+            if (response.ok) {
+                const data = await response.json();
                 this.monitors = data.monitors || [];
+                this.lastSyncTime = data.last_updated;
                 this.processMonitorData();
             } else {
-                console.error('UptimeRobot API Error:', data.error?.message);
-                this.showNoDataMessage();
+                console.warn('Synced UptimeRobot data not available yet');
+                this.showSyncMessage();
             }
         } catch (error) {
-            console.error('Error fetching UptimeRobot data:', error);
-            this.showNoDataMessage();
+            console.warn('Error loading synced data:', error.message);
+            this.showSyncMessage();
         }
     }
 
@@ -87,15 +75,15 @@ class ISPMonitor {
             const ispData = {
                 isp_name: monitor.friendly_name,
                 ip: this.extractIPFromUrl(monitor.url),
-                status: this.getStatusText(monitor.status),
+                status: monitor.status,
                 quality_score: this.calculateQualityScore(monitor),
-                avg_latency: this.getLatestResponseTime(monitor),
+                avg_latency: monitor.response_time_ms || 0,
                 jitter: 0, // UptimeRobot doesn't provide jitter
-                packet_loss: monitor.status === 2 ? 0 : 100, // 2 = UP
-                uptime_today: this.getUptimePercentage(monitor),
-                timestamp: new Date().toISOString(),
+                packet_loss: monitor.status === 'UP' ? 0 : 100,
+                uptime_today: monitor.uptime_percentage,
+                timestamp: monitor.timestamp,
                 url: monitor.url,
-                type: this.getMonitorType(monitor.type)
+                type: monitor.type
             };
             
             this.latestData.set(monitor.friendly_name, ispData);
@@ -104,9 +92,8 @@ class ISPMonitor {
 
     extractIPFromUrl(url) {
         try {
-            // Remove protocol
+            // Remove protocol and extract host
             let cleanUrl = url.replace(/^https?:\/\//, '');
-            // Remove path and port
             cleanUrl = cleanUrl.split('/')[0].split(':')[0];
             
             // Check if it's an IP address
@@ -117,37 +104,9 @@ class ISPMonitor {
         }
     }
 
-    getStatusText(status) {
-        // UptimeRobot status: 0=paused, 1=not checked, 2=up, 8=seems down, 9=down
-        return status === 2 ? 'UP' : 'DOWN';
-    }
-
-    getMonitorType(type) {
-        const types = { 1: 'HTTP(s)', 2: 'Keyword', 3: 'Ping', 4: 'Port', 5: 'Heartbeat' };
-        return types[type] || 'Unknown';
-    }
-
-    getLatestResponseTime(monitor) {
-        if (monitor.response_times && monitor.response_times.length > 0) {
-            return monitor.response_times[monitor.response_times.length - 1].value || 0;
-        }
-        return monitor.average_response_time || 0;
-    }
-
-    getUptimePercentage(monitor) {
-        // Try different uptime ratios
-        if (monitor.all_time_uptime_ratio) {
-            return parseFloat(monitor.all_time_uptime_ratio);
-        }
-        if (monitor.custom_uptime_ratios && monitor.custom_uptime_ratios.length > 0) {
-            return parseFloat(monitor.custom_uptime_ratios[0]); // 1-day ratio
-        }
-        return monitor.status === 2 ? 100 : 0;
-    }
-
     calculateQualityScore(monitor) {
-        const uptime = this.getUptimePercentage(monitor);
-        const responseTime = this.getLatestResponseTime(monitor);
+        const uptime = monitor.uptime_percentage || 0;
+        const responseTime = monitor.response_time_ms || 0;
         
         // Calculate quality based on uptime and response time
         let score = uptime; // Start with uptime percentage
@@ -158,22 +117,31 @@ class ISPMonitor {
         else if (responseTime > 200) score -= 5;
         
         // Bonus for very low response time
-        if (responseTime < 50) score = Math.min(100, score + 5);
+        if (responseTime < 50 && responseTime > 0) score = Math.min(100, score + 5);
         
         return Math.max(0, Math.min(100, Math.round(score)));
     }
 
-    showNoDataMessage() {
+    showSyncMessage() {
         document.getElementById('total-isps').textContent = '0';
         document.getElementById('isps-up').textContent = '0/0';
         document.getElementById('avg-latency').textContent = '0ms';
-        document.getElementById('last-update').textContent = 'No data';
+        document.getElementById('last-update').textContent = 'Syncing...';
         
         const tbody = document.querySelector('#isp-table tbody');
         tbody.innerHTML = `
             <tr>
                 <td colspan="8" style="text-align: center; padding: 2rem; color: #666;">
-                    No monitoring data available. Please check your network connection and try again.
+                    <div style="margin-bottom: 1rem;">
+                        <strong>🔄 Syncing monitoring data...</strong>
+                    </div>
+                    <div style="font-size: 0.9rem; line-height: 1.6;">
+                        <p>GitHub Actions is fetching the latest monitoring data.</p>
+                        <p>This process runs every 15 minutes.</p>
+                        <p style="margin-top: 1rem; font-size: 0.8rem; color: #888;">
+                            Data will appear here once the first sync completes (max 15 minutes).
+                        </p>
+                    </div>
                 </td>
             </tr>
         `;
@@ -190,7 +158,7 @@ class ISPMonitor {
             .filter(row => row.status === 'UP').length;
         
         const avgLatency = this.calculateAverageLatency();
-        const lastUpdate = 'Just now';
+        const lastUpdate = this.getLastUpdateTime();
 
         document.getElementById('total-isps').textContent = totalISPs;
         document.getElementById('isps-up').textContent = `${ispsUp}/${totalISPs}`;
@@ -210,12 +178,25 @@ class ISPMonitor {
         return (totalLatency / upISPs.length).toFixed(1);
     }
 
+    getLastUpdateTime() {
+        if (!this.lastSyncTime) return 'Never';
+        
+        const timeDiff = Date.now() - new Date(this.lastSyncTime).getTime();
+        const minutes = Math.floor(timeDiff / (1000 * 60));
+        
+        if (minutes < 1) return 'Just now';
+        if (minutes < 60) return `${minutes}m ago`;
+        
+        const hours = Math.floor(minutes / 60);
+        return `${hours}h ${minutes % 60}m ago`;
+    }
+
     updateTable() {
         const tbody = document.querySelector('#isp-table tbody');
         tbody.innerHTML = '';
 
         if (this.latestData.size === 0) {
-            this.showNoDataMessage();
+            this.showSyncMessage();
             return;
         }
 
