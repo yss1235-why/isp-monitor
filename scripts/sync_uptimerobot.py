@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 # File: scripts/sync_uptimerobot.py
-# UptimeRobot Data Sync Script for ISP Monitoring Integration
-# Fetches monitor data from UptimeRobot API and saves to local files
-# Compatible with free tier (1 request/minute rate limit)
+# UptimeRobot Data Sync Script - Runs every 15 minutes via GitHub Actions
+# Uses UPTIMEROBOT_API_KEY environment secret
 
 import requests
 import json
@@ -17,7 +16,7 @@ class UptimeRobotSync:
         self.base_url = 'https://api.uptimerobot.com/v2/'
         
     def ensure_directories(self):
-        """Create necessary directories (data/uptimerobot/)"""
+        """Create necessary directories"""
         os.makedirs('data/uptimerobot', exist_ok=True)
         
     def fetch_account_details(self):
@@ -38,14 +37,14 @@ class UptimeRobotSync:
                 return result.get('account', {})
             else:
                 error_msg = result.get('error', {}).get('message', 'Unknown error')
-                print(f"UptimeRobot API Error: {error_msg}")
+                print(f"❌ UptimeRobot API Error: {error_msg}")
                 return None
                 
         except requests.exceptions.RequestException as e:
-            print(f"Request error: {e}")
+            print(f"❌ Request error: {e}")
             return None
         except json.JSONDecodeError as e:
-            print(f"JSON decode error: {e}")
+            print(f"❌ JSON decode error: {e}")
             return None
     
     def fetch_monitors(self):
@@ -56,14 +55,14 @@ class UptimeRobotSync:
                 'api_key': self.api_key,
                 'format': 'json',
                 'logs': '1',
-                'log_limit': '20',
+                'log_limit': '10',
                 'response_times': '1',
-                'response_times_limit': '10',
+                'response_times_limit': '5',
                 'all_time_uptime_ratio': '1',
                 'custom_uptime_ratios': '1-7-30'
             }
             
-            print("Fetching monitors from UptimeRobot API...")
+            print("📡 Fetching monitors from UptimeRobot API...")
             response = requests.post(url, data=data, timeout=60)
             response.raise_for_status()
             
@@ -71,18 +70,18 @@ class UptimeRobotSync:
             
             if result.get('stat') == 'ok':
                 monitors = result.get('monitors', [])
-                print(f"Successfully fetched {len(monitors)} monitors")
+                print(f"✅ Successfully fetched {len(monitors)} monitors")
                 return monitors
             else:
                 error_msg = result.get('error', {}).get('message', 'Unknown error')
-                print(f"UptimeRobot API Error: {error_msg}")
+                print(f"❌ UptimeRobot API Error: {error_msg}")
                 return []
                 
         except requests.exceptions.RequestException as e:
-            print(f"Request error: {e}")
+            print(f"❌ Request error: {e}")
             return []
         except json.JSONDecodeError as e:
-            print(f"JSON decode error: {e}")
+            print(f"❌ JSON decode error: {e}")
             return []
     
     def get_status_text(self, status):
@@ -107,41 +106,41 @@ class UptimeRobotSync:
         }
         return type_map.get(type_code, 'Unknown')
     
-    def calculate_response_time(self, monitor):
+    def get_response_time(self, monitor):
         """Get the latest response time"""
-        # Try to get from average_response_time first
-        if monitor.get('average_response_time'):
-            return monitor.get('average_response_time')
+        # Try response_times array first
+        if monitor.get('response_times') and len(monitor['response_times']) > 0:
+            return monitor['response_times'][-1].get('value', 0)
         
-        # Fallback to latest response time from response_times array
-        response_times = monitor.get('response_times', [])
-        if response_times:
-            return response_times[-1].get('value', 0)
+        # Fallback to average_response_time
+        return monitor.get('average_response_time', 0)
+    
+    def get_uptime_percentage(self, monitor):
+        """Get uptime percentage (prefer recent data)"""
+        # Try 1-day ratio first (most recent)
+        if monitor.get('custom_uptime_ratios') and len(monitor['custom_uptime_ratios']) > 0:
+            return float(monitor['custom_uptime_ratios'][0])
         
-        return 0
+        # Fallback to all-time ratio
+        if monitor.get('all_time_uptime_ratio'):
+            return float(monitor['all_time_uptime_ratio'])
+        
+        # Final fallback based on current status
+        return 100.0 if monitor.get('status') == 2 else 0.0
     
     def process_monitor_data(self, monitors, account_info):
         """Process monitor data into standardized format"""
         processed_data = []
         timestamp = datetime.now(timezone.utc).isoformat()
         
-        print(f"Processing {len(monitors)} monitors...")
+        print(f"📊 Processing {len(monitors)} monitors...")
         
         for monitor in monitors:
-            # Get uptime percentage (prefer all-time, fallback to custom ratios)
-            uptime_percentage = monitor.get('all_time_uptime_ratio', 0)
-            if uptime_percentage == 0 and monitor.get('custom_uptime_ratios'):
-                # Use 30-day ratio if available
-                custom_ratios = monitor.get('custom_uptime_ratios', [])
-                if len(custom_ratios) >= 3:
-                    uptime_percentage = custom_ratios[2]  # 30-day ratio
-                elif len(custom_ratios) >= 2:
-                    uptime_percentage = custom_ratios[1]  # 7-day ratio
-                elif len(custom_ratios) >= 1:
-                    uptime_percentage = custom_ratios[0]  # 1-day ratio
+            # Get uptime percentage
+            uptime_percentage = self.get_uptime_percentage(monitor)
             
             # Get response time
-            response_time = self.calculate_response_time(monitor)
+            response_time = self.get_response_time(monitor)
             
             processed_monitor = {
                 'timestamp': timestamp,
@@ -150,30 +149,29 @@ class UptimeRobotSync:
                 'url': monitor.get('url', ''),
                 'type': self.get_monitor_type(monitor.get('type')),
                 'status': self.get_status_text(monitor.get('status')),
-                'uptime_percentage': float(uptime_percentage) if uptime_percentage else 0.0,
+                'uptime_percentage': round(uptime_percentage, 2),
                 'response_time_ms': int(response_time) if response_time else 0,
                 'create_datetime': monitor.get('create_datetime', ''),
-                'monitor_interval': account_info.get('monitor_interval', 5),
-                'keyword_type': monitor.get('keyword_type', ''),
-                'keyword_value': monitor.get('keyword_value', ''),
-                'ssl_info': json.dumps(monitor.get('ssl', {})) if monitor.get('ssl') else ''
+                'monitor_interval': account_info.get('monitor_interval', 5)
             }
             
             processed_data.append(processed_monitor)
-            print(f"  ✓ {processed_monitor['friendly_name']}: {processed_monitor['status']} ({processed_monitor['uptime_percentage']}%)")
+            
+            # Status emoji for logging
+            status_emoji = "✅" if processed_monitor['status'] == 'UP' else "❌"
+            print(f"  {status_emoji} {processed_monitor['friendly_name']}: {processed_monitor['status']} ({processed_monitor['uptime_percentage']}% uptime)")
             
         return processed_data
     
     def save_to_csv(self, data):
-        """Save processed data to CSV file in data/uptimerobot/monitors.csv"""
+        """Save processed data to CSV file"""
         csv_file = 'data/uptimerobot/monitors.csv'
         file_exists = os.path.exists(csv_file)
         
         fieldnames = [
             'timestamp', 'monitor_id', 'friendly_name', 'url', 'type', 
             'status', 'uptime_percentage', 'response_time_ms', 
-            'create_datetime', 'monitor_interval', 'keyword_type', 
-            'keyword_value', 'ssl_info'
+            'create_datetime', 'monitor_interval'
         ]
         
         with open(csv_file, 'a', newline='', encoding='utf-8') as f:
@@ -185,14 +183,14 @@ class UptimeRobotSync:
             for row in data:
                 writer.writerow(row)
         
-        print(f"✓ Saved data to {csv_file}")
+        print(f"💾 Saved data to {csv_file}")
     
     def save_to_json(self, data):
-        """Save processed data to daily JSON file in data/uptimerobot/YYYY-MM-DD.json"""
+        """Save processed data to daily JSON file"""
         today = datetime.now(timezone.utc).strftime('%Y-%m-%d')
         json_file = f'data/uptimerobot/{today}.json'
         
-        # Load existing data
+        # Load existing data for today
         if os.path.exists(json_file):
             try:
                 with open(json_file, 'r', encoding='utf-8') as f:
@@ -209,10 +207,10 @@ class UptimeRobotSync:
         with open(json_file, 'w', encoding='utf-8') as f:
             json.dump(existing_data, f, indent=2, ensure_ascii=False)
         
-        print(f"✓ Saved data to {json_file}")
+        print(f"💾 Saved daily data to {json_file}")
     
     def create_summary_json(self, data):
-        """Create a summary JSON for easy consumption by JavaScript in data/uptimerobot/summary.json"""
+        """Create summary JSON for dashboard consumption"""
         if not data:
             summary = {
                 'last_updated': datetime.now(timezone.utc).isoformat(),
@@ -224,75 +222,83 @@ class UptimeRobotSync:
                 'monitors': []
             }
         else:
+            monitors_up = len([m for m in data if m['status'] == 'UP'])
+            monitors_down = len([m for m in data if m['status'] in ['DOWN', 'SEEMS_DOWN', 'PAUSED']])
+            avg_uptime = sum(m['uptime_percentage'] for m in data) / len(data)
+            
+            # Calculate average response time for UP monitors only
+            up_monitors = [m for m in data if m['status'] == 'UP' and m['response_time_ms'] > 0]
+            avg_response = sum(m['response_time_ms'] for m in up_monitors) / len(up_monitors) if up_monitors else 0
+            
             summary = {
                 'last_updated': datetime.now(timezone.utc).isoformat(),
                 'total_monitors': len(data),
-                'monitors_up': len([m for m in data if m['status'] == 'UP']),
-                'monitors_down': len([m for m in data if m['status'] in ['DOWN', 'SEEMS_DOWN']]),
-                'average_uptime': round(sum(m['uptime_percentage'] for m in data) / len(data), 2),
-                'average_response_time': round(sum(m['response_time_ms'] for m in data) / len(data), 2),
+                'monitors_up': monitors_up,
+                'monitors_down': monitors_down,
+                'average_uptime': round(avg_uptime, 2),
+                'average_response_time': round(avg_response, 2),
                 'monitors': data
             }
         
         with open('data/uptimerobot/summary.json', 'w', encoding='utf-8') as f:
             json.dump(summary, f, indent=2, ensure_ascii=False)
         
-        print(f"✓ Created summary.json")
+        print(f"💾 Created summary.json for dashboard")
     
     def sync_data(self):
         """Main sync function"""
-        print(f"🚀 Starting UptimeRobot sync at {datetime.now(timezone.utc)}")
-        print(f"API Key: {self.api_key[:10]}...")
+        print("🚀 Starting UptimeRobot sync...")
+        print(f"⏰ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}")
+        print(f"🔑 API Key: {self.api_key[:10]}...")
         
         self.ensure_directories()
         
-        # First, verify API key with account details
-        print("\n📊 Verifying API key...")
+        # Verify API key
+        print("\n🔐 Verifying API key...")
         account_info = self.fetch_account_details()
         if not account_info:
-            print("❌ Failed to verify API key. Please check your UPTIMEROBOT_API_KEY secret.")
+            print("❌ Failed to verify API key")
             return False
         
-        print(f"✅ API key valid! Account: {account_info.get('email', 'Unknown')}")
-        print(f"📈 Monitor limit: {account_info.get('monitor_limit', 'Unknown')}")
-        print(f"⏱️ Check interval: {account_info.get('monitor_interval', 'Unknown')} minutes")
+        print(f"✅ API key verified!")
+        print(f"📧 Account: {account_info.get('email', 'Unknown')}")
+        print(f"📊 Monitor limit: {account_info.get('monitor_limit', 'Unknown')}")
+        print(f"⏱️  Check interval: {account_info.get('monitor_interval', 'Unknown')} minutes")
         
-        # Respect rate limit (1 request/minute for free tier)
-        print("\n⏳ Waiting 5 seconds between API calls (rate limit respect)...")
-        time.sleep(5)
+        # Small delay to respect rate limits
+        time.sleep(2)
         
         # Fetch monitors
         monitors = self.fetch_monitors()
         
         if not monitors:
-            print("⚠️ No monitors found or API error. Creating empty summary.")
+            print("⚠️  No monitors found. Creating empty summary.")
             self.create_summary_json([])
             return True
         
-        print(f"\n📋 Processing monitor data...")
+        # Process and save data
         processed_data = self.process_monitor_data(monitors, account_info)
         
-        # Save data in multiple formats
         print(f"\n💾 Saving data...")
         self.save_to_csv(processed_data)
         self.save_to_json(processed_data)
         self.create_summary_json(processed_data)
         
-        # Print final summary
+        # Final summary
         up_count = len([m for m in processed_data if m['status'] == 'UP'])
         down_count = len([m for m in processed_data if m['status'] in ['DOWN', 'SEEMS_DOWN']])
         paused_count = len([m for m in processed_data if m['status'] == 'PAUSED'])
         
-        print(f"\n✅ UptimeRobot sync complete!")
-        print(f"📊 Summary: {up_count} UP, {down_count} DOWN, {paused_count} PAUSED")
-        print(f"📁 Files created in data/uptimerobot/")
+        print(f"\n✅ Sync complete!")
+        print(f"📈 Summary: {up_count} UP | {down_count} DOWN | {paused_count} PAUSED")
+        print(f"📁 Files updated in data/uptimerobot/")
         
         return True
 
 def main():
     """Main function"""
     print("=" * 60)
-    print("🤖 UptimeRobot Data Sync for GitHub ISP Monitor")
+    print("🤖 UptimeRobot Data Sync - Every 15 Minutes")
     print("=" * 60)
     
     # Get API key from environment
@@ -300,16 +306,14 @@ def main():
     
     if not api_key:
         print("❌ Error: UPTIMEROBOT_API_KEY environment variable not set")
-        print("Please add your UptimeRobot API key to GitHub Secrets")
-        print("Your API Key: u2969607-0a95611c9802fc89b7c4ba93")
+        print("Please add your UptimeRobot API key to GitHub repository secrets")
         return False
     
     # Validate API key format
     if not (api_key.startswith('ur-') or api_key.startswith('u') or api_key.startswith('m')):
-        print("❌ Error: Invalid UptimeRobot API key format")
-        print("API key should start with 'ur-', 'u', or 'm'")
+        print("⚠️  Warning: API key format may be incorrect")
+        print("Expected format: starts with 'ur-', 'u', or 'm'")
         print(f"Received: {api_key[:10]}...")
-        return False
     
     # Create syncer and run
     syncer = UptimeRobotSync(api_key)
@@ -318,7 +322,7 @@ def main():
     if success:
         print("\n🎉 Sync completed successfully!")
     else:
-        print("\n❌ Sync failed. Check the logs above for details.")
+        print("\n❌ Sync failed. Check logs above for details.")
     
     return success
 
