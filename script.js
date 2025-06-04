@@ -1,3 +1,6 @@
+// File: script.js (root directory)
+// Enhanced ISP Monitor with UptimeRobot Integration
+
 // Disclaimer toggle functionality
 function toggleDisclaimer() {
     const content = document.getElementById('disclaimer-content');
@@ -27,10 +30,178 @@ function initializeDisclaimer() {
     toggle.textContent = '▼';
 }
 
+// UptimeRobot Integration Class
+class UptimeRobotIntegration {
+    constructor() {
+        this.monitors = new Map();
+        this.lastUpdate = null;
+    }
+
+    async loadUptimeRobotData() {
+        try {
+            // Load from synced data (note: data folder is in root)
+            const response = await fetch('./data/uptimerobot/summary.json');
+            if (response.ok) {
+                const data = await response.json();
+                return data.monitors || [];
+            }
+        } catch (error) {
+            console.warn('UptimeRobot synced data not available, this is normal on first setup:', error.message);
+        }
+        return [];
+    }
+
+    getStatusClass(status) {
+        const upStatuses = ['UP'];
+        return upStatuses.includes(status) ? 'up' : 'down';
+    }
+
+    getQualityClass(uptime) {
+        if (uptime >= 99.5) return 'excellent';
+        if (uptime >= 99.0) return 'good';
+        if (uptime >= 95.0) return 'fair';
+        return 'poor';
+    }
+
+    formatLastUpdate(timestamp) {
+        if (!timestamp) return 'Never';
+        
+        const timeDiff = Date.now() - new Date(timestamp).getTime();
+        const minutes = Math.floor(timeDiff / (1000 * 60));
+        
+        if (minutes < 1) return 'Just now';
+        if (minutes < 60) return `${minutes}m ago`;
+        
+        const hours = Math.floor(minutes / 60);
+        return `${hours}h ${minutes % 60}m ago`;
+    }
+
+    async displayUptimeRobotData() {
+        const monitors = await this.loadUptimeRobotData();
+        
+        if (monitors.length === 0) {
+            this.showUptimeRobotSetupMessage();
+            return;
+        }
+
+        this.createUptimeRobotSection(monitors);
+    }
+
+    showUptimeRobotSetupMessage() {
+        // Find the main element to insert the setup message
+        const main = document.querySelector('main');
+        const rankingsSection = document.querySelector('.rankings');
+        
+        // Create setup message section
+        const setupSection = document.createElement('section');
+        setupSection.className = 'uptimerobot-setup';
+        setupSection.innerHTML = `
+            <div style="background: #fff3cd; border: 2px solid #ffeaa7; border-radius: 12px; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 4px 12px rgba(255, 193, 7, 0.2);">
+                <h2 style="color: #856404; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                    🤖 UptimeRobot Integration
+                    <span style="font-size: 0.8rem; background: #e3f2fd; color: #1976d2; padding: 0.2rem 0.6rem; border-radius: 12px; font-weight: normal;">Setup Required</span>
+                </h2>
+                <div style="color: #856404;">
+                    <p style="margin-bottom: 1rem;"><strong>UptimeRobot data will appear here once the GitHub Action sync is set up.</strong></p>
+                    <p style="margin-bottom: 1rem;">To enable UptimeRobot integration:</p>
+                    <ol style="margin-left: 1.5rem; margin-bottom: 1rem;">
+                        <li>Add your UptimeRobot API key to GitHub Secrets as <code>UPTIMEROBOT_API_KEY</code></li>
+                        <li>Add the UptimeRobot sync workflow to <code>.github/workflows/uptimerobot-sync.yml</code></li>
+                        <li>Add the sync script to <code>scripts/sync_uptimerobot.py</code></li>
+                        <li>Wait for the first sync to run (within 30 minutes)</li>
+                    </ol>
+                    <p><strong>Your API Key:</strong> <code>u2969607-0a95611c9802fc89b7c4ba93</code></p>
+                </div>
+            </div>
+        `;
+        
+        // Insert before rankings section
+        main.insertBefore(setupSection, rankingsSection);
+    }
+
+    createUptimeRobotSection(monitors) {
+        // Remove any existing UptimeRobot sections
+        const existingSection = document.querySelector('.uptimerobot-section, .uptimerobot-setup');
+        if (existingSection) {
+            existingSection.remove();
+        }
+
+        // Find the main element to insert the new section
+        const main = document.querySelector('main');
+        const rankingsSection = document.querySelector('.rankings');
+        
+        // Create UptimeRobot section
+        const uptimeSection = document.createElement('section');
+        uptimeSection.className = 'uptimerobot-section';
+        uptimeSection.innerHTML = `
+            <div style="background: white; border-radius: 12px; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);">
+                <h2 style="margin-bottom: 1.5rem; color: #333; display: flex; align-items: center; gap: 0.5rem;">
+                    🤖 UptimeRobot Monitors
+                    <span class="external-badge">External Service</span>
+                </h2>
+                <div class="table-container">
+                    <table id="uptimerobot-table">
+                        <thead>
+                            <tr>
+                                <th>Monitor Name</th>
+                                <th>URL/IP</th>
+                                <th>Status</th>
+                                <th>Uptime %</th>
+                                <th>Response Time</th>
+                                <th>Type</th>
+                                <th>Last Updated</th>
+                            </tr>
+                        </thead>
+                        <tbody id="uptimerobot-tbody">
+                            <!-- Data will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+        
+        // Insert before rankings section
+        main.insertBefore(uptimeSection, rankingsSection);
+        
+        // Populate the table
+        this.populateUptimeRobotTable(monitors);
+    }
+
+    populateUptimeRobotTable(monitors) {
+        const tbody = document.getElementById('uptimerobot-tbody');
+        if (!tbody) return;
+        
+        tbody.innerHTML = '';
+
+        monitors.forEach(monitor => {
+            const row = document.createElement('tr');
+            const statusClass = this.getStatusClass(monitor.status);
+            const uptimeClass = this.getQualityClass(parseFloat(monitor.uptime_percentage));
+            
+            // Format last check time
+            const lastUpdate = this.formatLastUpdate(monitor.timestamp);
+            
+            row.innerHTML = `
+                <td><strong>${monitor.friendly_name}</strong></td>
+                <td><code class="url-code">${monitor.url}</code></td>
+                <td><span class="status ${statusClass}">${monitor.status}</span></td>
+                <td><span class="quality ${uptimeClass}">${monitor.uptime_percentage}%</span></td>
+                <td>${monitor.response_time_ms || 0}ms</td>
+                <td>${monitor.type}</td>
+                <td><small>${lastUpdate}</small></td>
+            `;
+            
+            tbody.appendChild(row);
+        });
+    }
+}
+
+// Enhanced ISP Monitor Class
 class ISPMonitor {
     constructor() {
         this.data = [];
         this.latestData = new Map();
+        this.uptimeRobot = new UptimeRobotIntegration();
         this.init();
     }
 
@@ -41,20 +212,27 @@ class ISPMonitor {
         await this.loadData();
         this.updateDashboard();
         
+        // Initialize UptimeRobot data
+        await this.uptimeRobot.displayUptimeRobotData();
+        
         // Auto-refresh every 5 minutes
         setInterval(() => {
-            this.loadData().then(() => this.updateDashboard());
+            this.loadData().then(() => {
+                this.updateDashboard();
+                this.uptimeRobot.displayUptimeRobotData();
+            });
         }, 5 * 60 * 1000);
     }
 
     async loadData() {
         try {
+            // Load ISP monitoring data from root/data directory
             const response = await fetch('./data/logs.csv');
             const csvText = await response.text();
             this.data = this.parseCSV(csvText);
             this.processLatestData();
         } catch (error) {
-            console.error('Error loading data:', error);
+            console.error('Error loading ISP data:', error);
             // Show error message in dashboard if no data
             if (this.data.length === 0) {
                 this.showNoDataMessage();
