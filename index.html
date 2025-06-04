@@ -20,19 +20,26 @@
             </div>
             <div class="disclaimer-content" id="disclaimer-content">
                 <div class="disclaimer-inner">
-                    <p><strong>This monitoring tool is NOT 100% accurate and has significant limitations:</strong></p>
+                    <p><strong>This monitoring dashboard has the following limitations:</strong></p>
                     <ul>
-                        <li><strong>15-minute delays:</strong> Data is only updated every 15 minutes, not real-time</li>
-                        <li><strong>GitHub's free tier limitations:</strong> Limited compute time, potential delays, and service interruptions</li>
-                        <li><strong>Single monitoring location:</strong> Tests only from GitHub's servers, not your actual location</li>
-                        <li><strong>Limited samples:</strong> Only 5 ping samples per check (professional tools use hundreds)</li>
-                        <li><strong>Public IPs only:</strong> Monitors DNS/CDN servers, not actual ISP infrastructure</li>
-                        <li><strong>No geographic diversity:</strong> Results may not reflect your local network conditions</li>
-                        <li><strong>ICMP only:</strong> Only tests ping connectivity, not bandwidth, DNS resolution, or web browsing</li>
-                        <li><strong>GitHub Actions reliability:</strong> Free tier may experience delays, failures, or usage limits</li>
+                        <li><strong>15-minute sync delays:</strong> Data is synced from UptimeRobot every 15 minutes via GitHub Actions, not real-time</li>
+                        <li><strong>GitHub Actions dependency:</strong> Data sync reliability depends on GitHub's free tier availability and may experience delays</li>
+                        <li><strong>UptimeRobot service dependency:</strong> Monitoring accuracy depends on UptimeRobot's service availability and infrastructure</li>
+                        <li><strong>Free tier limitations:</strong> UptimeRobot free tier has 50 monitor limit and 5-minute check intervals</li>
+                        <li><strong>Public IP monitoring:</strong> Monitors ISP gateway/DNS servers, not actual broadband infrastructure or routing quality</li>
+                        <li><strong>Limited scope:</strong> Only tests basic connectivity, not bandwidth, DNS resolution, or actual internet browsing experience</li>
+                        <li><strong>Data freshness:</strong> Historical calculations depend on available data - newer ISPs may show limited uptime history</li>
+                        <li><strong>Geographic variance:</strong> UptimeRobot monitors from their locations, which may not reflect your local network conditions</li>
                     </ul>
-                    <p><strong>Use this tool for general trends only, not for critical decisions or SLA monitoring.</strong></p>
-                    <p>For professional ISP monitoring, consider dedicated services with multiple monitoring locations and comprehensive testing.</p>
+                    <p><strong>✅ Improvements with UptimeRobot integration:</strong></p>
+                    <ul>
+                        <li><strong>Professional monitoring:</strong> Industry-standard uptime monitoring service</li>
+                        <li><strong>Multiple check locations:</strong> More reliable than single-location monitoring</li>
+                        <li><strong>Consistent methodology:</strong> Standardized monitoring across all ISPs</li>
+                        <li><strong>Better uptime accuracy:</strong> Professional-grade uptime calculations</li>
+                    </ul>
+                    <p><strong>Use this tool for general ISP comparison and trend analysis, not for critical business decisions or SLA monitoring.</strong></p>
+                    <p>For mission-critical monitoring, consider enterprise services with multiple global monitoring locations, bandwidth testing, and comprehensive network analysis.</p>
                 </div>
             </div>
         </section>
