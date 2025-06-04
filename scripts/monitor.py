@@ -11,7 +11,7 @@ import time
 import urllib.request
 import urllib.error
 
-# ISP Configuration with HTTP fallback URLs
+# ISP Configuration - ONLY LOCAL ISPs
 ISP_CONFIG = {
     "BSNL_fibre": {
         "ip": "117.199.72.1",
@@ -20,19 +20,8 @@ ISP_CONFIG = {
     "RailTail": {
         "ip": "136.232.74.101",
         "http_test": "http://136.232.74.101"  
-    },
-    "Cloudflare": {
-        "ip": "1.1.1.1", 
-        "http_test": "https://1.1.1.1"   # Cloudflare DNS over HTTPS
-    },
-    "OpenDNS": {
-        "ip": "208.67.222.222",
-        "http_test": "https://www.opendns.com"
-    },
-    "Quad9": {
-        "ip": "9.9.9.9",
-        "http_test": "https://www.quad9.net"
     }
+    # Removed Cloudflare, OpenDNS, and Quad9 as they are not local ISPs
 }
 
 def ping_host(host, count=5):
