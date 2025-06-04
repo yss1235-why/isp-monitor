@@ -1,3 +1,5 @@
+<!-- File: index.html (root directory) -->
+<!-- Enhanced ISP monitoring dashboard with UptimeRobot integration -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,59 +7,92 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ISP Uptime & Quality Monitor</title>
     <link rel="stylesheet" href="style.css">
+    <meta name="description" content="Real-time ISP monitoring dashboard with UptimeRobot integration">
+    <meta name="keywords" content="ISP monitoring, uptime, network quality, UptimeRobot, GitHub Actions">
 </head>
 <body>
     <header>
         <h1>📡 Ukhrul ISP Uptime & Quality Monitor</h1>
-        <p>Real-time monitoring of ISP performance and reliability, Choose your ISP wisely.</p>
+        <p>Real-time monitoring of ISP performance and reliability with dual monitoring coverage</p>
+        <div style="margin-top: 1rem; font-size: 0.9rem; opacity: 0.8;">
+            <span style="background: rgba(255,255,255,0.2); padding: 0.3rem 0.8rem; border-radius: 15px; margin: 0 0.2rem;">
+                🔄 GitHub Actions: Every 15min
+            </span>
+            <span style="background: rgba(255,255,255,0.2); padding: 0.3rem 0.8rem; border-radius: 15px; margin: 0 0.2rem;">
+                🤖 UptimeRobot: External Monitoring
+            </span>
+        </div>
     </header>
 
     <main>
         <section class="disclaimer">
             <div class="disclaimer-header" onclick="toggleDisclaimer()">
-                <h2>⚠️ Important Disclaimer & Limitations</h2>
+                <h2>⚠️ Important Disclaimer & Monitoring Limitations</h2>
                 <span class="disclaimer-toggle" id="disclaimer-toggle">▼</span>
             </div>
             <div class="disclaimer-content" id="disclaimer-content">
                 <div class="disclaimer-inner">
-                    <p><strong>This monitoring tool is NOT 100% accurate and has significant limitations:</strong></p>
+                    <p><strong>This monitoring tool provides general trends only and has several limitations:</strong></p>
+                    
+                    <h3>🔄 GitHub Actions Monitoring:</h3>
                     <ul>
-                        <li><strong>15-minute delays:</strong> Data is only updated every 15 minutes, not real-time</li>
-                        <li><strong>GitHub's free tier limitations:</strong> Limited compute time, potential delays, and service interruptions</li>
-                        <li><strong>Single monitoring location:</strong> Tests only from GitHub's servers, not your actual location</li>
-                        <li><strong>Limited samples:</strong> Only 5 ping samples per check (professional tools use hundreds)</li>
-                        <li><strong>Public IPs only:</strong> Monitors DNS/CDN servers, not actual ISP infrastructure</li>
-                        <li><strong>No geographic diversity:</strong> Results may not reflect your local network conditions</li>
-                        <li><strong>ICMP only:</strong> Only tests ping connectivity, not bandwidth, DNS resolution, or web browsing</li>
-                        <li><strong>GitHub Actions reliability:</strong> Free tier may experience delays, failures, or usage limits</li>
+                        <li><strong>15-minute intervals:</strong> Data updates every 15 minutes, not real-time</li>
+                        <li><strong>GitHub server location:</strong> Tests from GitHub's infrastructure, not your actual location</li>
+                        <li><strong>Limited samples:</strong> Only 5 ping samples per check</li>
+                        <li><strong>Public IPs only:</strong> Tests DNS servers, not actual ISP infrastructure</li>
+                        <li><strong>GitHub limitations:</strong> Free tier compute limits may cause delays</li>
                     </ul>
-                    <p><strong>Use this tool for general trends only, not for critical decisions or SLA monitoring.</strong></p>
-                    <p>For professional ISP monitoring, consider dedicated services with multiple monitoring locations and comprehensive testing.</p>
+                    
+                    <h3>🤖 UptimeRobot Monitoring:</h3>
+                    <ul>
+                        <li><strong>External perspective:</strong> Monitors from UptimeRobot's global network</li>
+                        <li><strong>5-minute intervals:</strong> More frequent checks than GitHub Actions</li>
+                        <li><strong>Different test locations:</strong> May show different results than local experience</li>
+                        <li><strong>Free tier limits:</strong> 50 monitors, basic alerting only</li>
+                    </ul>
+                    
+                    <h3>⚡ General Limitations:</h3>
+                    <ul>
+                        <li><strong>No bandwidth testing:</strong> Only tests connectivity, not speed</li>
+                        <li><strong>ICMP only:</strong> Ping tests don't reflect web browsing experience</li>
+                        <li><strong>Geographic variance:</strong> Your local network conditions may differ</li>
+                        <li><strong>Limited diagnostic data:</strong> Cannot identify root causes of issues</li>
+                    </ul>
+                    
+                    <p style="margin-top: 1.5rem;"><strong>📊 Use this data for general trends and ISP comparison only.</strong></p>
+                    <p>For critical network monitoring or SLA verification, consider professional monitoring services with comprehensive testing and multiple geographic locations.</p>
                 </div>
             </div>
         </section>
 
         <section class="summary">
             <div class="stat-card">
-                <h3>Total ISPs</h3>
+                <h3>Total ISPs (Internal)</h3>
                 <div class="stat-value" id="total-isps">-</div>
+                <small>GitHub Actions</small>
             </div>
             <div class="stat-card">
                 <h3>Currently Up</h3>
                 <div class="stat-value" id="isps-up">-</div>
+                <small>Internal + External</small>
             </div>
             <div class="stat-card">
                 <h3>Average Latency</h3>
                 <div class="stat-value" id="avg-latency">-</div>
+                <small>Internal Only</small>
             </div>
             <div class="stat-card">
                 <h3>Last Updated</h3>
                 <div class="stat-value" id="last-update">-</div>
+                <small>Most Recent</small>
             </div>
         </section>
 
+        <!-- UptimeRobot section will be dynamically inserted here by script.js -->
+
         <section class="rankings">
-            <h2>ISP Rankings</h2>
+            <h2>🏠 Internal ISP Monitoring (GitHub Actions)</h2>
+            <p>Network quality testing from GitHub's infrastructure every 15 minutes</p>
             <div class="table-container">
                 <table id="isp-table">
                     <thead>
@@ -80,15 +115,57 @@
         </section>
 
         <section class="charts">
-            <h2>Historical Data</h2>
+            <h2>📈 Monitoring Integration Status</h2>
             <div id="chart-container">
-                <p>Loading historical data...</p>
+                <div>
+                    <div>
+                        <h3 style="color: #17a2b8; margin-bottom: 1rem;">🔄 Internal Monitoring</h3>
+                        <p><strong>Source:</strong> GitHub Actions</p>
+                        <p><strong>Frequency:</strong> Every 15 minutes</p>
+                        <p><strong>Data:</strong> Latency, jitter, packet loss</p>
+                        <p><strong>Perspective:</strong> GitHub servers → ISP IPs</p>
+                        <div id="internal-status" style="margin-top: 1rem; padding: 0.5rem; background: #d4edda; color: #155724; border-radius: 4px; text-align: center; font-weight: bold;">
+                            ✅ Active
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 style="color: #28a745; margin-bottom: 1rem;">🤖 External Monitoring</h3>
+                        <p><strong>Source:</strong> UptimeRobot</p>
+                        <p><strong>Frequency:</strong> Every 5 minutes</p>
+                        <p><strong>Data:</strong> Uptime, response time</p>
+                        <p><strong>Perspective:</strong> Global network → Your services</p>
+                        <div id="external-status" style="margin-top: 1rem; padding: 0.5rem; background: #fff3cd; color: #856404; border-radius: 4px; text-align: center; font-weight: bold;">
+                            ⏳ Setting up...
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3>💡 Monitoring Coverage</h3>
+                    <p style="margin-bottom: 1rem;">This dashboard combines two monitoring approaches:</p>
+                    <ul>
+                        <li><strong>Internal monitoring</strong> shows how ISPs perform from external servers (GitHub)</li>
+                        <li><strong>External monitoring</strong> shows how your services appear to the outside world</li>
+                        <li><strong>Combined data</strong> provides comprehensive network health insights</li>
+                        <li><strong>Dual perspective</strong> helps identify if issues are local or widespread</li>
+                    </ul>
+                </div>
             </div>
         </section>
     </main>
 
     <footer>
-        <p>Data updated every 15 minutes via GitHub Actions| Developed by innovative Archive | <a href="https://github.com/yss1235-why/isp-monitor" target="_blank">View Source</a></p>
+        <p>
+            Data updated every 15 minutes via GitHub Actions | 
+            UptimeRobot integration for external monitoring | 
+            Developed by Innovative Archive | 
+            <a href="https://github.com/yss1235-why/isp-monitor" target="_blank">View Source</a>
+        </p>
+        <div>
+            <span>🔧 API Integration: UptimeRobot + GitHub Actions</span> • 
+            <span>📊 Data Sources: Internal Testing + External Monitoring</span>
+        </div>
     </footer>
 
     <script src="script.js"></script>
