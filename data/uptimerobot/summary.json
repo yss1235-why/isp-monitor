@@ -1,5 +1,5 @@
 {
-  "last_updated": "2025-06-05T05:35:50.267073+00:00",
+  "last_updated": "2025-06-05T05:50:25.202113+00:00",
   "total_monitors": 3,
   "monitors_up": 3,
   "monitors_down": 0,
@@ -7,7 +7,7 @@
   "average_response_time": 144.67,
   "monitors": [
     {
-      "timestamp": "2025-06-05T05:35:50.266328+00:00",
+      "timestamp": "2025-06-05T05:50:25.201398+00:00",
       "monitor_id": 800668854,
       "friendly_name": "BSNL Fibre",
       "url": "117.199.72.1",
@@ -19,7 +19,7 @@
       "monitor_interval": 5
     },
     {
-      "timestamp": "2025-06-05T05:35:50.266328+00:00",
+      "timestamp": "2025-06-05T05:50:25.201398+00:00",
       "monitor_id": 800670173,
       "friendly_name": "Marison Enterprise",
       "url": "103.168.75.29",
@@ -31,7 +31,7 @@
       "monitor_interval": 5
     },
     {
-      "timestamp": "2025-06-05T05:35:50.266328+00:00",
+      "timestamp": "2025-06-05T05:50:25.201398+00:00",
       "monitor_id": 800668886,
       "friendly_name": "Railtel Fibre",
       "url": "136.232.74.101",
