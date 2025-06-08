@@ -1,25 +1,25 @@
 {
-  "last_updated": "2025-06-08T22:31:56.861908+00:00",
+  "last_updated": "2025-06-08T22:48:18.563710+00:00",
   "total_monitors": 3,
   "monitors_up": 2,
   "monitors_down": 1,
-  "average_uptime": 94.47,
-  "average_response_time": 135.0,
+  "average_uptime": 94.4,
+  "average_response_time": 133.0,
   "monitors": [
     {
-      "timestamp": "2025-06-08T22:31:56.859523+00:00",
+      "timestamp": "2025-06-08T22:48:18.561277+00:00",
       "monitor_id": 800668854,
       "friendly_name": "BSNL Fibre",
       "url": "117.209.112.1",
       "type": "Ping",
       "status": "UP",
       "uptime_percentage": 100.0,
-      "response_time_ms": 150,
+      "response_time_ms": 146,
       "create_datetime": 1749051072,
       "monitor_interval": 5
     },
     {
-      "timestamp": "2025-06-08T22:31:56.859523+00:00",
+      "timestamp": "2025-06-08T22:48:18.561277+00:00",
       "monitor_id": 800670173,
       "friendly_name": "Marison Enterprise",
       "url": "103.168.75.29",
@@ -31,14 +31,14 @@
       "monitor_interval": 5
     },
     {
-      "timestamp": "2025-06-08T22:31:56.859523+00:00",
+      "timestamp": "2025-06-08T22:48:18.561277+00:00",
       "monitor_id": 800668886,
       "friendly_name": "Railtel Fibre",
       "url": "100.100.100.1",
       "type": "Ping",
       "status": "DOWN",
-      "uptime_percentage": 83.42,
-      "response_time_ms": 138,
+      "uptime_percentage": 83.21,
+      "response_time_ms": 147,
       "create_datetime": 1749051282,
       "monitor_interval": 5
     }
